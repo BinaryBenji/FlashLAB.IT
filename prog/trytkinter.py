@@ -9,15 +9,15 @@ root.title("FlashLAB")
 root.configure(background='#6abea7')
 root.iconbitmap('img/logooooico.ico')
 
-#frame = Frame(root)
-#frame.pack()
+frame = Frame(root)
+frame.pack()
 
 # Image
-canvas = Canvas(frame, bg='#6abea7', width=200, height=200)
+canvas = Canvas(frame, bg='#6abea7', width=600, height=600)
 canvas.pack()
 
 photoimage = ImageTk.PhotoImage(file='img/logtrans.png')
-canvas.create_image(200,200,image=photoimage)
+canvas.create_image(300,300,image=photoimage)
 
 
 
