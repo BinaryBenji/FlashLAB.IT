@@ -18,7 +18,11 @@ service postfix restart
 apt-get --assume-yes install courier-base courier-authdaemon courier-authlib-mysql courier-imap courier-pop
 sed -i.bak -E 's/^([ \t]*authmodulelist[ \t]*=[ \t]*).*/\1'"authuserdb"'/' /etc/courier/authdaemonrc
 /etc/init.d/courier-authdaemon restart
+hostname=`hostname -i`
+sudo sed -i.bak -E 's/^([ \t]*ADDRESS[ \t]*=[ \t]*).*/\1'"$hostname"'/' /etc/courier/imapd
+/etc/init.d/courier-imap restart
 userdb michael set uid=5000 gid=5000 home=/var/mail/michael mail=/var/mail/michael
 userdb michael set systempw=$(openssl passwd -1 michael)
 makeuserdb
-/etc/init.d/courier-imap restart
+
+
