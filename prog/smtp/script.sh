@@ -4,10 +4,12 @@ useradd -s /bin/false tinydns
 useradd -s /bin/false dnslog
 tinydns-conf tinydns dnslog /etc/tinydns 127.0.0.1
 ln -s /etc/tinydns /etc/service
-./etc/tinydns/root/add-ns flashlab.itinet.fr 127.0.0.1
-./etc/tinydns/root/add-mx flashlab.itinet.fr 127.0.0.1
-make /etc/tinydns/root
+cd /etc/tinydns/root
+./add-ns flashlab.itinet.fr 127.0.0.1
+./add-mx flashlab.itinet.fr 127.0.0.1
+make
 svc -u /etc/service/tinydns
+cd
 apt-get --assume-yes install postfix
 groupadd vmail -g 5000
 useradd -g vmail -u 5000 vmail -d /home/vmail/ -m
