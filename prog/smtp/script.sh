@@ -24,5 +24,3 @@ sudo sed -i.bak -E 's/^([ \t]*ADDRESS[ \t]*=[ \t]*).*/\1'"$hostname"'/' /etc/cou
 userdb michael set uid=5000 gid=5000 home=/var/mail/michael mail=/var/mail/michael
 userdb michael set systempw=$(openssl passwd -1 michael)
 makeuserdb
-
-
