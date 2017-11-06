@@ -1,4 +1,13 @@
 #!/bin/bash
+apt-get --assume-yes install djbdns daemontools ucspi-tcp dbndns
+useradd -s /bin/false tinydns
+useradd -s /bin/false dnslog
+tinydns-conf tinydns dnslog /etc/tinydns 127.0.0.1
+ln -s /etc/tinydns /etc/service
+./etc/tinydns/root/add-ns flashlab.itinet.fr 127.0.0.1
+./etc/tinydns/root/add-mx flashlab.itinet.fr 127.0.0.1
+make /etc/tinydns/root
+svc -u /etc/service/tinydns
 apt-get --assume-yes install postfix
 groupadd vmail -g 5000
 useradd -g vmail -u 5000 vmail -d /home/vmail/ -m
@@ -18,7 +27,7 @@ service postfix restart
 apt-get --assume-yes install courier-base courier-authdaemon courier-authlib-mysql courier-imap courier-pop
 sed -i.bak -E 's/^([ \t]*authmodulelist[ \t]*=[ \t]*).*/\1'"authuserdb"'/' /etc/courier/authdaemonrc
 /etc/init.d/courier-authdaemon restart
-hostname=`hostname -i`
+hostname=`hostname -I`
 sudo sed -i.bak -E 's/^([ \t]*ADDRESS[ \t]*=[ \t]*).*/\1'"$hostname"'/' /etc/courier/imapd
 /etc/init.d/courier-imap restart
 userdb michael set uid=5000 gid=5000 home=/var/mail/michael mail=/var/mail/michael
