@@ -1,5 +1,6 @@
 #!/bin/bash
-apt-get --assume-yes install djbdns daemontools ucspi-tcp dbndns
+apt-get update
+apt-get --assume-yes install djbdns daemontools ucspi-tcp
 useradd -s /bin/false tinydns
 useradd -s /bin/false dnslog
 tinydns-conf tinydns dnslog /etc/tinydns 127.0.0.1
@@ -9,7 +10,7 @@ cd /etc/tinydns/root
 ./add-mx flashlab.itinet.fr 127.0.0.1
 make
 svc -u /etc/service/tinydns
-cd
+cd -
 apt-get --assume-yes install postfix
 groupadd vmail -g 5000
 useradd -g vmail -u 5000 vmail -d /home/vmail/ -m
@@ -23,7 +24,7 @@ echo "michael@flashlab.itinet.fr michael/" >> /etc/postfix/vmailbox
 maildirmake /var/mail/michael
 chown -R vmail:vmail /var/mail/michael
 touch /etc/mailname
-echo "flashlab.triton.itinet.fr" >> /etc/mailname
+echo "flashlab.itinet.fr" >> /etc/mailname
 postmap /etc/postfix/vmailbox
 service postfix restart
 apt-get --assume-yes install courier-base courier-authdaemon courier-authlib-mysql courier-imap courier-pop
