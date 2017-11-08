@@ -11,6 +11,7 @@ cd /etc/tinydns/root
 make
 svc -h /etc/service/tinydns
 cd -
+/etc/init.d/networking restart
 apt-get --assume-yes install postfix
 groupadd vmail -g 5000
 useradd -g vmail -u 5000 vmail -d /home/vmail/ -m
