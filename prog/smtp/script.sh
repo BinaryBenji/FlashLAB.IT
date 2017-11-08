@@ -16,7 +16,6 @@ sleep 5
 apt-get --assume-yes install postfix
 groupadd vmail -g 5000
 useradd -g vmail -u 5000 vmail -d /home/vmail/ -m
-mkdir /var/mail/
 chown -R vmail:vmail /var/mail
 cp main.cf /etc/postfix
 touch /etc/postfix/vmailbox
