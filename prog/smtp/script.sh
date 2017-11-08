@@ -1,21 +1,21 @@
 #!/bin/bash
-#apt-get update
-#apt-get --assume-yes install djbdns daemontools ucspi-tcp
-#useradd -s /bin/false tinydns
-#useradd -s /bin/false dnslog
-#tinydns-conf tinydns dnslog /etc/tinydns 127.0.0.1
-#ln -s /etc/tinydns /etc/service
-#cd /etc/tinydns/root
-#./add-ns flashlab.itinet.fr 127.0.0.1
-#./add-mx flashlab.itinet.fr 127.0.0.1
-#make
-#svc -h /etc/service/tinydns
-#cd -
+apt-get update
+apt-get --assume-yes install djbdns daemontools ucspi-tcp
+useradd -s /bin/false tinydns
+useradd -s /bin/false dnslog
+tinydns-conf tinydns dnslog /etc/tinydns 127.0.0.1
+ln -s /etc/tinydns /etc/service
+cd /etc/tinydns/root
+./add-ns flashlab.itinet.fr 127.0.0.1
+./add-mx flashlab.itinet.fr 127.0.0.1
+make
+svc -h /etc/service/tinydns
+cd -
 /etc/init.d/networking restart
+sleep 5
 apt-get --assume-yes install postfix
 groupadd vmail -g 5000
 useradd -g vmail -u 5000 vmail -d /home/vmail/ -m
-mkdir /home/vmail
 mkdir /var/mail/
 chown -R vmail:vmail /var/mail
 cp main.cf /etc/postfix
@@ -25,6 +25,8 @@ touch /etc/mailname
 echo "flashlab.itinet.fr" >> /etc/mailname
 postmap /etc/postfix/vmailbox
 service postfix reload
+sleep 5
+/etc/init.d/networking restart
 apt-get --assume-yes install courier-base courier-authdaemon courier-imap courier-pop
 sed -i.bak -E 's/^([ \t]*authmodulelist[ \t]*=[ \t]*).*/\1'"authuserdb"'/' /etc/courier/authdaemonrc
 /etc/init.d/courier-authdaemon restart
@@ -36,3 +38,4 @@ userdb michael set systempw=$(openssl passwd -1 michael)
 makeuserdb
 maildirmake /var/mail/michael
 chown -R vmail:vmail /var/mail/michael
+/etc/init.d/networking restart
