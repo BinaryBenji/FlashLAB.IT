@@ -21,12 +21,11 @@ cp master.cf /etc/postfix
 cp main.cf /etc/postfix
 touch /etc/postfix/vmailbox
 echo "michael@flashlab.itinet.fr michael/" >> /etc/postfix/vmailbox
-chown -R vmail:vmail /var/mail/michael
 touch /etc/mailname
 echo "flashlab.itinet.fr" >> /etc/mailname
 postmap /etc/postfix/vmailbox
-service postfix restart
-apt-get --assume-yes install courier-base courier-authdaemon courier-authlib-mysql courier-imap courier-pop
+service postfix reload
+apt-get --assume-yes install courier-base courier-authdaemon courier-imap courier-pop
 sed -i.bak -E 's/^([ \t]*authmodulelist[ \t]*=[ \t]*).*/\1'"authuserdb"'/' /etc/courier/authdaemonrc
 /etc/init.d/courier-authdaemon restart
 hostname=`hostname -I`
@@ -36,3 +35,4 @@ userdb michael set uid=5000 gid=5000 home=/var/mail/michael mail=/var/mail/micha
 userdb michael set systempw=$(openssl passwd -1 michael)
 makeuserdb
 maildirmake /var/mail/michael
+chown -R vmail:vmail /var/mail/michael
