@@ -9,7 +9,7 @@ cd /etc/tinydns/root
 ./add-ns flashlab.itinet.fr 127.0.0.1
 ./add-mx flashlab.itinet.fr 127.0.0.1
 make
-svc -u /etc/service/tinydns
+svc -h /etc/service/tinydns
 cd -
 apt-get --assume-yes install postfix
 groupadd vmail -g 5000
