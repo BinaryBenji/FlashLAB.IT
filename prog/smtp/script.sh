@@ -21,7 +21,6 @@ cp master.cf /etc/postfix
 cp main.cf /etc/postfix
 touch /etc/postfix/vmailbox
 echo "michael@flashlab.itinet.fr michael/" >> /etc/postfix/vmailbox
-maildirmake /var/mail/michael
 chown -R vmail:vmail /var/mail/michael
 touch /etc/mailname
 echo "flashlab.itinet.fr" >> /etc/mailname
@@ -36,3 +35,4 @@ sudo sed -i.bak -E 's/^([ \t]*ADDRESS[ \t]*=[ \t]*).*/\1'"$hostname"'/' /etc/cou
 userdb michael set uid=5000 gid=5000 home=/var/mail/michael mail=/var/mail/michael
 userdb michael set systempw=$(openssl passwd -1 michael)
 makeuserdb
+maildirmake /var/mail/michael
