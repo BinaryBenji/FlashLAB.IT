@@ -1,0 +1,59 @@
+<?xml version="1.0"?>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/><title>makepercentrelay</title><link rel="stylesheet" type="text/css" href="style.css"/><meta name="generator" content="DocBook XSL Stylesheets V1.78.1"/><link rel="home" href="#idm255235057424" title="makepercentrelay"/><link xmlns="" rel="stylesheet" type="text/css" href="manpage.css"/><meta xmlns="" name="MSSmartTagsPreventParsing" content="TRUE"/><link xmlns="" rel="icon" href="icon.gif" type="image/gif"/><!--
+
+Copyright 1998 - 2009 Double Precision, Inc.  See COPYING for distribution
+information.
+
+--></head><body><div class="refentry"><a id="idm255235057424" shape="rect"> </a><div class="titlepage"/><div class="refnamediv"><h2>Name</h2><p>makepercentrelay — Build a list of %-relayed domains</p></div><div class="refsynopsisdiv"><h2>Synopsis</h2><div class="cmdsynopsis"><p><code class="command">makepercentrelay</code> </p></div></div><div class="refsect1"><a id="idm255239217120" shape="rect"> </a><h2>DESCRIPTION</h2><p>
+<span class="command"><strong>makepercentrelay</strong></span> reads
+<code class="filename">@sysconfdir@/esmtppercentrelay.dir</code>
+and creates <code class="filename">@sysconfdir@/esmtppercentrelay.dat</code> which is a
+binary
+database file. The files <code class="filename">@sysconfdir@/esmtppercentrelay</code>
+and
+<code class="filename">@sysconfdir@/esmtppercentrelay.dat</code> specify a list of
+"percent-hack"
+domains. <code class="filename">@sysconfdir@/esmtppercentrelay</code> is a plain text
+file,
+containing one domain per line.
+The <span class="application">Courier</span> mail server loads the
+contents of
+<code class="filename">@sysconfdir@/esmtppercentrelay</code> into memory, so if you
+have a lot of
+domains, you will want to use the binary database file.  The
+<span class="command"><strong>makepercentrelay</strong></span> command reads
+<code class="filename">@sysconfdir@/esmtppercentrelay.dir</code>, which can be either
+a plain text
+file itself, or a directory containing plain text files. All files in the
+subdirectory are concatenated, and the binary database file is created from
+the result.</p><p>
+the <span class="application">Courier</span> mail server can use both <code class="filename">@sysconfdir@/esmtppercentrelay</code> and
+<code class="filename">@sysconfdir@/esmtppercentrelay.dat</code> at the same time.
+Usually you
+would put a couple of your most frequent domains in
+<code class="filename">@sysconfdir@/esmtppercentrelay</code>, then put the rest in
+<code class="filename">@sysconfdir@/esmtppercentrelay.dir</code>, and use
+<span class="command"><strong>makepercentrelay</strong></span> to turn it into a database file.</p><p>
+"percent-hack" domains are a list of domains for which the <span class="application">Courier</span> mail server accepts mail
+via ESMTP addressed as "local%percent.hack.domain@local.domain", where
+"percent.hack.domain" is a domain found in
+<code class="filename">@sysconfdir@/esmtppercentrelay</code> or
+<code class="filename">@sysconfdir@/esmtppercentrelay.dat</code>, and
+"<code class="literal">local.domain</code>" is any domain
+found in <code class="filename">@sysconfdir@/locals</code>.
+The <span class="application">Courier</span> mail server removes the local
+domain, and
+rewrites the address as "<code class="literal">local@percent.hack.domain</code>", then
+attempts to deliver it.</p><p>
+The percent hack applies only to mail received via ESMTP.
+The <span class="application">Courier</span> mail server does not
+check this list of domains if the message is received via any other way (such
+as by running <span class="command"><strong>@bindir@/sendmail</strong></span> directly from the command
+line).
+"<code class="literal">percent.hack.domain</code>" would likely to be a domain that
+the <span class="application">Courier</span> mail server
+knows how to handle via some other means.  It might be an entry in
+<code class="filename">@sysconfdir@/aliases</code>, or an entry in
+<code class="filename">@sysconfdir@/esmtproutes</code>.</p></div><div class="refsect1"><a id="idm255233919456" shape="rect"> </a><h2>SEE ALSO</h2><p>
+<a class="ulink" href="esmtpd.html" target="_top" shape="rect"><span class="citerefentry"><span class="refentrytitle">esmtpd</span>(8)</span></a>,
+<a class="ulink" href="makealiases.html" target="_top" shape="rect"><span class="citerefentry"><span class="refentrytitle">makealiases</span>(8)</span></a>.</p></div></div></body></html>

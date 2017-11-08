@@ -1,0 +1,325 @@
+<?xml version="1.0"?>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/><title>dot-courier</title><link rel="stylesheet" type="text/css" href="style.css"/><meta name="generator" content="DocBook XSL Stylesheets V1.78.1"/><link rel="home" href="#idm255221038960" title="dot-courier"/><link xmlns="" rel="stylesheet" type="text/css" href="manpage.css"/><meta xmlns="" name="MSSmartTagsPreventParsing" content="TRUE"/><link xmlns="" rel="icon" href="icon.gif" type="image/gif"/><!--
+
+Copyright 1998 - 2009 Double Precision, Inc.  See COPYING for distribution
+information.
+
+--></head><body><div class="refentry"><a id="idm255221038960" shape="rect"> </a><div class="titlepage"/><div class="refnamediv"><h2>Name</h2><p>dot-courier — Local mail delivery instructions</p></div><div class="refsynopsisdiv"><h2>Synopsis</h2><div class="informalexample"><pre class="programlisting" xml:space="preserve">
+$HOME/.courier
+
+$HOME/.courier-foo
+
+@sysconfdir@/aliasdir/.courier-foo
+</pre></div></div><div class="refsect1"><a id="idm255225549312" shape="rect"> </a><h2>DESCRIPTION</h2><p>
+In most cases delivering mail to an account means simply placing the
+message in the account's system mailbox, but that does not have to be the
+case. Alternate mail delivery instructions include running a separate program
+to process the message, or forwarding the message to another address. The
+various <code class="filename">.courier</code> files specify some basic mail delivery
+instructions. If sophisticated mail filtering is required, the delivery
+instructions should include running an external mail filter, such as
+<a class="ulink" href="maildrop.html" target="_top" shape="rect"><span class="citerefentry"><span class="refentrytitle">maildrop</span>(1)</span>
+</a>.</p><p>
+The file <code class="filename">$HOME/.courier</code> specifies how messages are delivered
+to this account. If this file does not exist, default instructions set by the
+system administrator are used. The system administrator's default instructions
+specify the location of the account's system mailbox.</p><p>
+In addition to receiving mail addressed <code class="literal">user@domain</code>, it is
+also possible for <code class="literal">user</code> to receive mail addressed to
+<code class="literal">user-<em class="replaceable"><code>foo</code></em>@domain</code>, for arbitrary values of <em class="replaceable"><code>foo</code></em>. To do
+this, install <code class="filename">$HOME/.courier-<em class="replaceable"><code>foo</code></em></code>, with delivery
+instructions for mail addressed to <code class="literal">user-foo@domain</code>.</p><p>
+The system administrator can configure the
+<span class="application">Courier</span> mail server to accept mail without
+regard to whether addresses are in uppercase and lowercase. In that case the
+name of a <code class="filename">.courier</code> file must contain only lowercase characters.
+In any event, all periods in the address must be replaced with colons. For
+example, to specify delivery instructions for
+<code class="literal">user-Foo.Bar@domain</code>, put the delivery instructions in
+<code class="filename">~user/.courier-foo:bar</code>.</p><p>
+The file <code class="filename">$HOME/.courier-foo-default</code> specifies delivery
+instructions for any <code class="literal">user-foo-<em class="replaceable"><code>bar</code></em>@domain</code> address, where
+<em class="replaceable"><code>bar</code></em> can be anything. However, it does NOT control mail delivery to
+<code class="literal">user-foo@domain</code>, which is controlled by
+<code class="filename">$HOME/.courier-foo</code>.</p><p>
+Possible mail delivery instructions include: whether each message should be
+delivered to a non-standard mailbox; forwarded to another E-mail address; or
+if another program should be executed to handle the message. Programs executed
+from a <code class="filename">.courier</code> file have access to some environment variables
+(see ENVIRONMENT VARIABLES). Programs executed from a <code class="literal">-default</code>
+file can read those environment variables to determine the exact E-mail
+address the message was delivered to.</p><div class="refsect2"><a id="idm255220201440" shape="rect"> </a><h3>Default delivery instructions</h3><p>
+The <code class="filename">@sysconfdir@/aliasdir</code> directory is searched as the
+last
+resort, when all attempts to figure out how to deliver mail to a local address
+have failed.</p><p>
+<code class="filename">@sysconfdir@/aliasdir</code>'s functionality is very similar to how
+the <code class="literal">alias</code> account is implemented in Qmail, except that no actual
+system account is needed.  If <code class="literal">&lt;user@example.com&gt;</code> is a local
+address, and there is no such system account, nor is there an alias defined
+for this address, the <span class="application">Courier</span> mail server
+attempts to read delivery instructions from
+<code class="filename">@sysconfdir@/aliasdir/.courier-user</code>.</p><p>
+All the usual aspects of <code class="filename">.courier</code> deliveries apply. If there
+is no account that corresponds to the address
+<code class="filename">&lt;user-foo@example.com&gt;</code>, the
+<span class="application">Courier</span> mail server looks for
+<code class="filename">@sysconfdir@/aliasdir/.courier-user-foo</code>, then
+<code class="filename">@sysconfdir@/aliasdir/.courier-user-default</code>, and finally
+<code class="filename">@sysconfdir@/aliasdir/.courier-default</code>.</p><p>
+It therefore follows that you can use
+<code class="filename">@sysconfdir@/aliasdir/.courier-default</code> to specify local mail
+delivery instructions for addresses that do not exist. Combined with dynamic
+mail delivery instructions (see below), that's one way to specify non-standard
+locations of mailboxes.</p></div><div class="refsect2"><a id="idm255220189216" shape="rect"> </a><h3>Program/mailbox aliases</h3><p>
+The directory
+<code class="filename">@sysconfdir@/aliasdir/.courier-:xalias/</code>
+is created and maintained by the
+<a class="ulink" href="makealiases.html" target="_top" shape="rect"><span class="citerefentry"><span class="refentrytitle">makealiases</span>(8)</span></a>
+script to implement
+aliases that deliver directly to programs or mailboxes. See
+<a class="ulink" href="makealiases.html" target="_top" shape="rect"><span class="citerefentry"><span class="refentrytitle">makealiases</span>(8)</span></a>
+for more information.
+(This directory corresponds to local addresses that begin with
+"<code class="literal">.xalias/</code>", but the
+<span class="application">Courier</span> mail server prohibits explicit
+local addresses that
+begin with a period).</p><p>
+Additionally,
+<a class="ulink" href="makealiases.html" target="_top" shape="rect"><span class="citerefentry"><span class="refentrytitle">makealiases</span>(8)</span></a>
+creates subdirectories named
+<code class="filename">@sysconfdir@/aliasdir/.courier-:xalias-<em class="replaceable"><code>protocol</code></em>/</code>, where
+"<em class="replaceable"><code>protocol</code></em>" is set by the <code class="option">-m</code> option.</p></div><div class="refsect2"><a id="idm255220178176" shape="rect"> </a><h3>DELIVERY INSTRUCTIONS</h3><p>
+Each <code class="filename">.courier</code> file specifies zero or more delivery instructions.
+If the <code class="filename">.courier</code> file is zero bytes long, it means that default
+mail delivery instructions set by the system administrator should be used. If
+the file is not a zero length file, and does not specify any delivery
+instructions, messages to the corresponding E-mail address are silently
+discarded.</p><div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3><p>
+If <code class="filename">$HOME/.courier</code> does not exist, it is treated as a
+zero-length file, resulting in a delivery to a default mailbox. If
+<code class="filename">$HOME/.courier-foo</code> does not exist, it is treated as a
+non-existent address, returning the message as undeliverable.</p></div><p>
+If home directories have global read and execute permissions, the
+<span class="application">Courier</span> mail server will
+be able to reject mail to non-existent mailboxes right away. the
+<span class="application">Courier</span> mail server's ESMTP
+server runs as a non-privileged process. It will not be able to access home
+directories which do not have global read and execute permissions. Therefore,
+the message will be accepted for delivery, by the
+<span class="application">Courier</span> mail server. As soon as an attempt
+to deliver the message is made, the missing <code class="filename">.courier</code> file will
+result in the message being returned as undeliverable. However, here the
+<span class="application">Courier</span> mail server
+has to accept the message for delivery first, before generating a non-delivery
+report.</p><p>
+Delivery instructions in <code class="filename">.courier</code> are executed one at a time.
+If the execution of a delivery instruction fails for some reason, the message
+is either returned as undeliverable, or requeued for another delivery attempt.
+Messages that remain queued for a long period of time are returned as
+undeliverable.</p><div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3><p>
+Even if one delivery instruction fails (and the message is
+returned as undeliverable) previous delivery instructions in the file will
+have been completed anyway.</p></div><p>
+Blank lines in the file are ignored. Lines starting with the # character
+are comments, and are also ignored. Otherwise, each line specifies one of
+three possible delivery instructions: deliver to a system mailbox or a
+Maildir; run an external program; or forward the message to another
+address.</p></div><div class="refsect2"><a id="idm255220165392" shape="rect"> </a><h3>DELIVERY TO A SYSTEM MAILBOX OR A MAILDIR</h3><p>
+Lines that start with the <span class="token">.</span> or the
+<span class="token">/</span> character specify a mailbox or a Maildir
+delivery. The line must specify the complete location of the mailbox file, or
+a Maildir. Filenames starting with
+<span class="token">.</span> are relative to the account's home
+directory. A mailbox file is a traditional mailbox file that's readable by
+most mail software. A Maildir is a directory based mail storage format that
+offers several advantages over mailbox files. Mailbox files must be locked,
+and therefore they do not permit concurrent mail deliveries. The mailbox file
+must be locked while a new message is appended to it, otherwise multiple
+messages being delivered at the same time will trample all over each other.
+Maildirs do not require locking, and multiple concurrent deliveries can be
+made to the same Maildir. You can create Maildirs by using the
+<a class="ulink" href="maildirmake.html" target="_top" shape="rect"><span class="citerefentry"><span class="refentrytitle">maildirmake</span>(1)</span></a> command.</p><div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3><p>
+The <span class="application">Courier</span> mail server does not
+implement the "dot-locking" form of
+mailbox file locking. The <span class="application">Courier</span> mail
+server's locking abilities are limited solely to system
+file locking facilities (namely the <code class="function">lockf</code>,
+or <code class="function">flock</code>
+system calls).  You can always use
+<a class="ulink" href="maildrop.html" target="_top" shape="rect"><span class="citerefentry"><span class="refentrytitle">maildrop</span>(1)</span></a>, which offers additional
+locking options.</p></div></div><div class="refsect2"><a id="idm255220155152" shape="rect"> </a><h3>RUNNING AN EXTERNAL PROGRAM</h3><p>
+Lines that begin with a single <span class="token">|</span>
+character run an external program. The
+rest of the line specifies the command to be executed by the shell. Long
+commands can be continued on another line by terminating the previous line
+with the <span class="token">\</span> character.</p><p>
+The <span class="application">Courier</span> mail server runs the specified command, and provides the contents of the
+message on standard input.</p><p>
+The <span class="application">Courier</span> mail server waits until the external command completes execution before going
+to the next delivery instruction. The <span class="application">Courier</span> mail server examines the exit code of the
+external command in order to determine whether the delivery failed, or
+not.</p><p>
+If the external command terminates with the exit code of zero, the next
+delivery instruction is executed. If the command was the last delivery
+instruction in the file, the message is considered to be successfully
+delivered.</p><p>
+If the external command terminates with the exit code of
+<span class="errorcode">99</span>, any additional
+delivery instructions in the file are NOT executed, but the message is
+considered to be successfully delivered.</p><p>
+	If the external command terminates with the
+	<span class="quote">“<span class="quote">EX_SOFTWARE</span>”</span> exit code, which is usually 70,
+	on most platforms, the E-mail message gets
+	returned as undeliverable, a non-delivery report,
+	and no further delivery instructions takes place.
+      </p><p>
+	If the external command terminates with any of the following exit codes:
+	<span class="errorcode">64</span>, <span class="errorcode">65</span>,
+	<span class="errorcode">67</span>, <span class="errorcode">68</span>,
+	<span class="errorcode">69</span>,
+	<span class="errorcode">76</span>, <span class="errorcode">77</span>,
+	<span class="errorcode">78</span>, <span class="errorcode">100</span>,
+	or <span class="errorcode">112</span>,
+	the delivery attempt is considered to be failed, and the next course
+	of action gets selected by <span class="application">Courier</span> mail
+	server's backscatter suppression settings, as described in the
+	
+	<span class="quote">“<span class="quote"><a class="ulink" href="http://www.courier-mta.org/install.html#backscatter" target="_top" shape="rect">
+Backscatter Suppression</a></span>”</span>
+	section of the installation instructions;
+	see
+	<a class="ulink" href="courier.html" target="_top" shape="rect">
+	  <span class="citerefentry"><span class="refentrytitle">courier</span>(8)</span>
+	</a>
+	for more information.
+      </p><p>
+	If the external command terminates with any other exit code, it is
+	interpreted as a temporary error, and the message will be requeued for
+	another
+	delivery attempt later.
+      </p><div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3><p>
+On subsequent delivery attempts, delivery
+instructions will be carried out from the beginning of the
+<code class="filename">.courier</code> file.</p></div></div><div class="refsect2"><a id="idm255220133504" shape="rect"> </a><h3>DYNAMIC DELIVERY INSTRUCTIONS</h3><p>
+Lines that begin with the <span class="token">||</span>
+characters also run an external program. The
+rest of the line specifies the command to be executed by the shell. Long
+commands can be continued on another line by terminating the previous line
+with the <span class="token">\</span> character.</p><p>
+However, programs that are executed by the <span class="token">||</span> instruction,
+unlike <span class="token">|</span>,
+have their standard output captured, and reinterpreted as additional delivery
+instructions to be carried out. This feature allows an external program to be
+invoked to generate dynamic delivery instructions to be carried out by
+the <span class="application">Courier</span> mail server.</p><p>
+The standard output of the external program is read and parsed as if it
+contained <code class="filename">.courier</code> delivery instructions.
+There's a fixed upper
+limit on the number of bytes in dynamically-generated delivery instructions.
+For <span class="application">glibc</span>, the limit is 8191 bytes, other
+systems's upper limit should be similar.</p><p>
+The dynamically generated delivery instructions may also specify
+<span class="token">||</span>
+instructions, recursively.  There is an upper limit of four recursive
+dynamically-generated delivery instructions.</p><p>
+The exit code of the program invoked by the <span class="token">||</span> instructions are
+interpreted exactly like the exit code of a program invoked by
+<span class="token">|</span>, with the
+following exceptions. Dynamically-generated delivery instructions are carried
+out only if the external program terminates with an exit code of
+<span class="errorcode">0</span> or <span class="errorcode">99</span>.  Any
+other exit code discards any dynamically-generated delivery instructions. All
+other aspects of exit code treatment of external programs remains the same. If
+the exit code is <span class="errorcode">99</span>,
+the delivery is deemed to be successful, and any
+additional instructions in the original <code class="filename">.courier</code> file are
+ignored.  If the exit code is <span class="errorcode">0</span>,
+the remaining instructions in the original
+<code class="filename">.courier</code> file are executed.</p></div><div class="refsect2"><a id="idm255220120240" shape="rect"> </a><h3>Alias-based deliveries</h3><p>
+When the <span class="application">Courier</span> mail server delivers to default delivery instructions in
+<code class="filename">@sysconfdir@/aliasdir</code>, those delivery instructions are carried
+out under the <span class="application">Courier</span> mail server's installed system user and group id. That means that any
+executed programs or mailboxes are accessed as the <span class="application">Courier</span> mail server's mail system user and
+group.</p></div><div class="refsect2"><a id="idm255220116128" shape="rect"> </a><h3>ENVIRONMENT VARIABLES</h3><p>
+External commands executed from the <code class="filename">.courier</code> file will have the
+following environment variables:</p><div class="variablelist"><dl class="variablelist"><dt><span class="term"><code class="envar">HOME</code></span></dt><dd><p>
+The home directory.</p></dd><dt><span class="term"><code class="envar">USER</code></span></dt><dd><p>
+The recipient's userid.</p></dd><dt><span class="term"><code class="envar">SENDER</code></span></dt><dd><p>
+The message envelope return address.</p></dd><dt><span class="term"><code class="envar">RECIPIENT</code></span></dt><dd><p>
+The complete receipient address.</p></dd><dt><span class="term"><code class="envar">HOST</code></span></dt><dd><p>
+When <code class="envar">RECIPIENT</code> is of the form
+<code class="literal">user@domain</code>, <code class="envar">HOST</code> contains the domain part
+of the address.</p></dd><dt><span class="term"><code class="envar">LOCAL</code></span></dt><dd><p>
+When <code class="envar">RECIPIENT</code> is of the form <code class="literal">user@domain</code>,
+<code class="envar">LOCAL</code> contains the user part of the address.</p></dd><dt><span class="term"><code class="envar">EXT</code></span></dt><dd><p>
+When <code class="envar">USER</code> is of the form
+<code class="literal">$USER-foobar</code>, <code class="envar">EXT</code> will contain the foobar
+part.</p></dd><dt><span class="term"><code class="envar">EXT2</code></span></dt><dd><p>
+The portion of <code class="envar">EXT</code> that follows the first dash.</p></dd><dt><span class="term"><code class="envar">EXT3</code></span></dt><dd><p>
+The portion of <code class="envar">EXT2</code> that follows the first dash.</p></dd><dt><span class="term"><code class="envar">EXT4</code></span></dt><dd><p>
+The portion of <code class="envar">EXT3</code> that follows the first dash.</p></dd><dt><span class="term"><code class="envar">DEFAULT</code></span></dt><dd><p>
+When delivery instructions for the address
+<code class="literal">user-foo-bar@domain</code> come from the file
+<code class="filename">$HOME/.courier-foo-default</code>,
+<code class="envar">DEFAULT</code> will contain the bar part.</p></dd><dt><span class="term"><code class="envar">UFLINE</code></span></dt><dd><p>
+This environment variable contains the entire
+<code class="literal">From_</code> header that should be prepended to the message if it
+is to be delivered to a mailbox.</p></dd><dt><span class="term"><code class="envar">RPLINE</code></span></dt><dd><p>
+This environment variable contains the entire
+<code class="literal">Return-Path:</code> header.</p></dd><dt><span class="term"><code class="envar">DTLINE</code></span></dt><dd><p>
+This environment variable contains the entire
+<code class="literal">Delivered-To:</code> header.</p></dd></dl></div><div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3><p>
+When the external program reads the message from standard
+input, the message will NOT have the customary <code class="literal">From_</code>,
+<code class="literal">Return-Path:</code>, and <code class="literal">Delivered-To:</code>
+headers which are
+customary for locally-delivered messages. The external program can find those
+headers in the respective environment variables. If you have a command that
+expects to see those headers as a part of the message, you can use the
+<a class="ulink" href="preline.html" target="_top" shape="rect"><span class="citerefentry"><span class="refentrytitle">preline</span>(1)</span></a>
+wrapper to add them to the
+message. For example, the <span class="command"><strong>procmail</strong></span>
+mail filter requires those
+headers.</p></div><div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3><p>
+The <span class="command"><strong>maildrop</strong></span> mail filter will not require
+<span class="command"><strong>preline</strong></span> if the system administrator correctly configures
+the <span class="application">Courier</span> mail server.
+The system administrator can optionally configure the <span class="application">Courier</span> mail server to recognize
+<span class="command"><strong>maildrop</strong></span>, and activate certain
+<span class="command"><strong>maildrop</strong></span>-specific
+optimizations in the <span class="application">Courier</span> mail server. If these arrangemenets have been made, you can run
+<span class="command"><strong>maildrop</strong></span> directly from the <code class="filename">.courier</code>
+file, in a
+straightforward fashion, but those headers will automatically appear in the
+message, as seen by <span class="command"><strong>maildrop</strong></span>. Because the message is
+provided
+directly on standard input, without using a pipe, <span class="command"><strong>maildrop</strong></span>
+will
+be able to deliver the message directly from the <span class="application">Courier</span> mail server's message queue, without
+using a temporary file.</p></div></div><div class="refsect2"><a id="idm255220082016" shape="rect"> </a><h3>FORWARDING</h3><p>
+Lines that do not start with the <span class="token">.</span>, <span class="token">/</span>,
+or the <span class="token">|</span> character specify a
+comma-separated list of E-mail addresses to forward the message to. If the
+line starts with either the <span class="token">&amp;</span> or the <span class="token">!</span>
+character, the character is
+ignored; this is a legacy compatibility option.</p></div></div><div class="refsect1"><a id="idm255220078576" shape="rect"> </a><h2>BUGS</h2><p>
+The <span class="application">Courier</span> mail server's <code class="filename">.courier</code> may seem to be exactly like Qmail's
+<code class="filename">.qmail</code>, but there are some minor differences. Qmail, as of 1.03,
+does not implement dynamic delivery instructions. The <span class="application">Courier</span> mail server also uses a slightly
+different set of return codes which are classified as hard errors. The <span class="application">Courier</span> mail server's
+implementation of forwarding differs from Qmail's. According to Qmail's
+documentation, if any external command terminates in a permanent or temporary
+failure, the message is not forwarded to any forwarding address in the
+<code class="filename">.qmail</code> file, even to addresses that precede the failed delivery
+instruction. The message is forwarded only after it is successfully delivered.
+The <span class="application">Courier</span> mail server forwards messages to addresses immediately. Also, in some cases Qmail
+resets the return address on the message to the address of the account being
+forwarded.</p><p>
+To make things more confusing, there is a configuration setting to have
+the <span class="application">Courier</span> mail server read <code class="filename">$HOME/.qmail</code> files, instead of
+<code class="filename">$HOME/.courier</code>.</p></div><div class="refsect1"><a id="idm255220069840" shape="rect"> </a><h2>SEE ALSO</h2><p>
+<a class="ulink" href="dot-forward.html" target="_top" shape="rect"><span class="citerefentry"><span class="refentrytitle">dot-forward</span>(1)</span></a>,
+<a class="ulink" href="maildirmake.html" target="_top" shape="rect"><span class="citerefentry"><span class="refentrytitle">maildirmake</span>(1)</span></a>,
+<a class="ulink" href="maildrop.html" target="_top" shape="rect"><span class="citerefentry"><span class="refentrytitle">maildrop</span>(1)</span></a>,
+<a class="ulink" href="courier.html" target="_top" shape="rect"><span class="citerefentry"><span class="refentrytitle">courier</span>(8)</span></a>.</p></div></div></body></html>

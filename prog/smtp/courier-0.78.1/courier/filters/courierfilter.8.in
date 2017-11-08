@@ -1,0 +1,259 @@
+'\" t
+.\"<!-- Copyright 1998 - 2007 Double Precision, Inc.  See COPYING for -->
+.\"<!-- distribution information. -->
+.\"     Title: courierfilter
+.\"    Author: Sam Varshavchik
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 07/24/2017
+.\"    Manual: Double Precision, Inc.
+.\"    Source: Courier Mail Server
+.\"  Language: English
+.\"
+.TH "COURIERFILTER" "8" "07/24/2017" "Courier Mail Server" "Double Precision, Inc."
+.\" -----------------------------------------------------------------
+.\" * Define some portability stuff
+.\" -----------------------------------------------------------------
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.\" http://bugs.debian.org/507673
+.\" http://lists.gnu.org/archive/html/groff/2009-02/msg00013.html
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
+.SH "NAME"
+courierfilter \- Courier mail filters
+.SH "SYNOPSIS"
+.HP \w'\fBcourierfilter\fR\ 'u
+\fBcourierfilter\fR [[start] | [stop] | [restart]]
+.HP \w'\fBfilterctl\fR\ 'u
+\fBfilterctl\fR [[start] | [stop]] [\fIfilter\fR]
+.SH "DESCRIPTION"
+.PP
+The
+\fBfilterctl\fR
+commands install or uninstall global mail
+\fIfilter\fRs\&. Global mail filters are used to selectively block unwanted mail\&. More than one mail filter can be enabled at the same time\&. Three filters \-
+\m[blue]\fB\fBdupfilter\fR(8)\fR\m[]\&\s-2\u[1]\d\s+2,
+\m[blue]\fB\fBverifyfilter\fR(8)\fR\m[]\&\s-2\u[2]\d\s+2
+and
+\m[blue]\fB\fBcourierperlfilter\fR(8)\fR\m[]\&\s-2\u[3]\d\s+2
+\- are provided as examples for writing mail filters\&.
+.PP
+\fBcourierfilter start\fR
+runs all mail filters that have been installed by
+\fBfilterctl\fR\&.
+\fBcourierfilter stop\fR
+shuts down all running mail filters\&. After
+\fBcourierfilter start\fR, any
+\fBfilterctl\fR
+commands take effect immediately\&. After
+\fBcourierfilter stop\fR
+any
+\fBfilterctl\fR
+commands will take effect at the next
+\fBcourierfilter start\fR\&.
+.PP
+\fBcourierfilter restart\fR
+signals the running
+\fBcourierfilter\fR
+to reread its configuration files\&. This is normally done automatically, by
+\fBfilterctl\fR\&.
+.PP
+If any mail filter is installed, the mail filter must be running in order for any mail to be processed\&. Mail filters are assumed to be empowered to enforce system\-wide mail policies, so if an installed mail filter is not running then mail will not be accepted by the system\&. Note that mail will not be rejected, if possible\&. Every attempt will be made to send a temporary error code to an external mail system, asking it to try again later\&.
+.PP
+For this reason, you should modify your system boot script to run
+\fBcourierfilter start\fR
+as soon as possible, and run
+\fBcourierfilter stop\fR
+during the final portion of your system shutdown script\&. It is not necessary to run
+\fBcourierfilter\fR
+if you do not install a mail filter with
+\fBfilterctl\fR\&.
+.SH "MAIL FILTER IMPLEMENTATION"
+.PP
+This section explains how mail filters are implemented, and how to write a new global mail filter\&.
+.PP
+Available mail filter binaries are located in the directory
+@libexecdir@/filters\&. The
+\fBfilterctl\fR
+script looks in this directory to see which mail filters are available to be installed\&. Installing a mail filter consists of simply creating a soft link from the directory
+@sysconfdir@/filters/active
+to its corresponding binary in
+@libexecdir@/filters\&. The
+courierfilter start
+command simply reads
+@sysconfdir@/filters/active
+and runs every program in this directory\&.
+.PP
+The
+\fBfilterctl\fR
+script sends a HUP signal to
+\fBcourierfilter\fR
+after installing or uninstalling a filter\&.
+\fBcourierfilter\fR
+will reread the contents of
+@sysconfdir@/filters/active
+then start or stop individual mail filters\&.
+.PP
+After starting, an individual mail filter must create a filesystem domain socket in one of two directories:
+@localstatedir@/filters
+or
+@localstatedir@/allfilters\&. The name of the socket should be the same as a name of the filter, and the mail filter must make sure to remove any socket by the same name in the other directory\&. For various silly reasons, the recommended implementation is to create
+@localstatedir@/filters/\&.\fINAME\fR
+or
+@localstatedir@/allfilters/\&.\fINAME\fR
+(after making sure that it doesn\*(Aqt exist) then rename
+\fI\&.NAME\fR
+to
+\fINAME\fR\&.
+.PP
+After initializing the socket, the mail filter must then close its file descriptor #3\&. File descriptor 3 is inherited by every mail filter that\*(Aqs executed by the
+\fBcourierfilter start\fR
+command\&. The mail filter\*(Aqs file descriptor 3 is connected to the
+\fIwrite\fR
+end of a pipe, which may be relevant to certain ways of implementing the closing of the file descriptor, for instance in Perl where you may be forced to pseudo\-open the descriptor (in write mode) before closing it\&. The
+\fBcourierfilter start\fR
+command will not exit until every started mail filter closes its file descriptor 3\&. This allows for all mail filters to orderly initialize themselves before
+\fBcourierfilter start\fR
+command returns\&.
+.PP
+All mail filters also inherit a pipe on standard input, and must terminate when the pipe is closed\&. Mail filters must simultaneously listen for new connections on the mail filter socket, and for their standard input to close\&.
+.PP
+The mail filter receives a new connection on its socket for every message that needs to be filtered\&. After establishing a connection, the mail filter will immediately read the following information from the new socket:
+.PP
+A pathname to a file containing the contents of the message\&.
+.PP
+One or more pathnames to control files for this message\&.
+.PP
+Each pathname is terminated by a single newline character\&. The last pathname is followed by a second newline character\&. The pathnames may either be relative pathnames to
+@prefix@
+or absolute pathnames, depending on the system configuration\&.
+.PP
+The mail filter is free to judge the message\*(Aqs worthiness by reading its contents and/or control file(s) as soon as a second consecutive newline character is received\&. The final verdict is rendered by writing back a result code on the same socket\&. The result code follows the same format as regular SMTP replies (even though the message may not have been received via SMTP), and can be used to communicate acceptance, temporary failure, or a permanent failure\&. If it\*(Aqs a failure, then the text portion of the result code will be used, if possible\&. The result code may be a multiline response, just like a regular SMTP reply\&. The mail filter must immediately close the connection after writing the result code\&. After closing the socket the mail filter must then proceed to wait for another connection request on the original listening socket\&.
+.PP
+The mail filter can be multithreaded or multitasked, and can accept multiple connections simultaneously\&. When its standard input is closed the mail filter should stop accepting new connections and wait for any existing connections to be closed, prior to exiting\&.
+.PP
+Global mail filters must be EXTREMELY resilient to runtime failures\&. Since mail will not be processed if an installed mail filter is not running, if a mail filter crashes it will effectively shut down the mail server\&. Currently
+\fBcourierfilter\fR
+does not attempt to restart mail filters which crash\&.
+.SH "MAIL FILTER INVOCATION"
+.PP
+The system administrator defines what mail gets filtered by editing the contents of the
+enablefiltering
+configuration file in
+@sysconfdir@\&. This configuration file contains a list of mail sources that should be filtered, like esmtp or local\&. See
+\m[blue]\fB\fBcourier\fR(8)\fR\m[]\&\s-2\u[4]\d\s+2
+for more information\&. A default
+@sysconfdir@/enablefiltering
+file is installed that specifies only the
+esmtp
+mail source as subject to filtering\&.
+.PP
+A message is not subject to filtering if its source is not listed in
+@sysconfdir@/enablefiltering\&. Otherwise the following rules apply\&.
+.PP
+Certain mail destinations have the ability to selectively whitelist arbitrary messages\&. For example, local mail recipients have the ability to selectively whitelist individual messages, provided that a local mail filter (independent of any global mail filter) is installed that implements the
+\m[blue]\fBmaildrop filtering API\fR\m[]\&\s-2\u[5]\d\s+2\&.
+.PP
+New messages are filtered by connecting to every socket in
+@localstatedir@/filters
+and/or
+@localstatedir@/allfilters, one at a time\&. All mail filters must accept the message, for it to be accepted by Courier\&. If a socket exists but a connection cannot be established then the message is not accepted, and a temporary failure indication is returned\&. That\*(Aqs why no mail will be accepted unless all installed mail filters are running\&.
+.PP
+Mail recipients that did not whitelist the sender, via the maildrop API, will have their mail filtered against everything in
+@localstatedir@/filters
+and
+@localstatedir@/allfilters\&. Mail to recipients that whitelisted the sender, or mail to destinations that do not use a maildrop API\-compatible filter, will be filtered only against the contents of
+@localstatedir@/allfilters\&.
+.PP
+This gives system administrators a choice whether to install selective, or mandatory mail filters, or a combination of both\&.
+.SH "BUGS"
+.PP
+Many filesystem domain socket implementation are buggy\&.
+.PP
+Handling of crashed mail filters could be improved\&.
+.SH "FILES"
+.PP
+@libexecdir@/filters
+.RS 4
+Available mail filters\&.
+.RE
+.PP
+@sysconfdir@/filters
+.RS 4
+Miscellaneous configuration files\&.
+.RE
+.PP
+@sysconfdir@/filters/active
+.RS 4
+Installed mail filters\&.
+.RE
+.PP
+@sysconfdir@/enablefiltering
+.RS 4
+Which mail sources to filter\&.
+.RE
+.PP
+@localstatedir@/allfilters
+.RS 4
+Mandatory filters\&.
+.RE
+.PP
+@localstatedir@/filters
+.RS 4
+Optional filters\&.
+.RE
+.SH "SEE ALSO"
+.PP
+\m[blue]\fB\fBlocalmailfilter\fR(7)\fR\m[]\&\s-2\u[5]\d\s+2,
+\m[blue]\fB\fBcourier\fR(8)\fR\m[]\&\s-2\u[4]\d\s+2,
+\m[blue]\fB\fBdupfilter\fR(8)\fR\m[]\&\s-2\u[1]\d\s+2,
+\m[blue]\fB\fBratefilter\fR(8)\fR\m[]\&\s-2\u[6]\d\s+2,
+\m[blue]\fB\fBverifyfilter\fR(8)\fR\m[]\&\s-2\u[2]\d\s+2,
+\m[blue]\fB\fBcourierperlfilter\fR(8)\fR\m[]\&\s-2\u[3]\d\s+2\&.
+.SH "AUTHOR"
+.PP
+\fBSam Varshavchik\fR
+.RS 4
+Author
+.RE
+.SH "NOTES"
+.IP " 1." 4
+\fBdupfilter\fR(8)
+.RS 4
+\%http://www.courier-mta.org/dupfilter.html
+.RE
+.IP " 2." 4
+\fBverifyfilter\fR(8)
+.RS 4
+\%http://www.courier-mta.org/verifyfilter.html
+.RE
+.IP " 3." 4
+\fBcourierperlfilter\fR(8)
+.RS 4
+\%http://www.courier-mta.org/courierperlfilter.html
+.RE
+.IP " 4." 4
+\fBcourier\fR(8)
+.RS 4
+\%http://www.courier-mta.org/courier.html
+.RE
+.IP " 5." 4
+maildrop filtering API
+.RS 4
+\%http://www.courier-mta.org/localmailfilter.html
+.RE
+.IP " 6." 4
+\fBratefilter\fR(8)
+.RS 4
+\%http://www.courier-mta.org/ratefilter.html
+.RE

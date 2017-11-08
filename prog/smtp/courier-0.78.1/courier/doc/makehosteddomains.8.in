@@ -1,0 +1,207 @@
+'\" t
+.\"<!-- Copyright 1998 - 2009 Double Precision, Inc.  See COPYING for -->
+.\"<!-- distribution information. -->
+.\"     Title: makehosteddomains
+.\"    Author: Sam Varshavchik
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 07/24/2017
+.\"    Manual: Double Precision, Inc.
+.\"    Source: Courier Mail Server
+.\"  Language: English
+.\"
+.TH "MAKEHOSTEDDOMAINS" "8" "07/24/2017" "Courier Mail Server" "Double Precision, Inc."
+.\" -----------------------------------------------------------------
+.\" * Define some portability stuff
+.\" -----------------------------------------------------------------
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.\" http://bugs.debian.org/507673
+.\" http://lists.gnu.org/archive/html/groff/2009-02/msg00013.html
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
+.SH "NAME"
+makehosteddomains \- Build a database of hosted domains
+.SH "SYNOPSIS"
+.HP \w'\fBmakehosteddomains\fR\ 'u
+\fBmakehosteddomains\fR
+.SH "DESCRIPTION"
+.PP
+\fBmakehosteddomains\fR
+rebuilds the contents of the
+@sysconfdir@/hosteddomains\&.dat
+database from the contents of
+@sysconfdir@/hosteddomains\&. This can be either a file or a directory\&. If it\*(Aqs a directory, the contents of all the files in this directory are simply concatenated\&. The
+\fBmakehosteddomains\fR
+script must be run in order for any changes to
+@sysconfdir@/hosteddomains
+to take effect\&.
+.PP
+The function of
+@sysconfdir@/hosteddomains
+is very similar to the one of
+@sysconfdir@/locals\&. Both configuration files specify a list of domains that are considered to be local domains \- domains whose mailboxes are stored locally\&.
+.PP
+The difference is that domains listed in
+@sysconfdir@/locals
+are removed from addresses before their mailbox is looked up\&. For example, if the domain "example\&.com" is listed in
+@sysconfdir@/locals, then the address
+<user@example\&.com>
+is delivered to a local mailbox named "user"\&. If this domain is listed, instead, in
+@sysconfdir@/hosteddomains, then the address
+<user@example\&.com>
+is delivered to a local mailbox named "user@example\&.com"\&. Usually you would use
+@sysconfdir@/locals
+to specify domains that correspond to your local system accounts, that are looked up in your system\*(Aqs password database\&. The
+@sysconfdir@/hosteddomains
+file is usually used when you have database\-based virtual domains, that are maintained via an LDAP or a MySQL server\&. The
+Courier
+mail server\*(Aqs LDAP and MySQL authentication modules will use the full E\-mail address to query the LDAP or MySQL server for the location of the local mailbox that correspond to the E\-mail address\&. The
+Courier
+mail server\*(Aqs
+authuserdb
+authentication module can also use full E\-mail addresses\&.
+.SS "Contents of hosteddomains"
+.PP
+The file
+@sysconfdir@/hosteddomains
+simply contains a list of domains, one per line, for example:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+domain\&.com
+example\&.org
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+Each domain can optionally be followed by a single tab character, in order to specify an alias for a domain, for example:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+domain\&.com
+mail\&.domain\&.com<TAB>domain\&.com
+example\&.com<TAB>domain\&.com
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+First, we list the domain "domain\&.com" as a hosted domain\&. Then, we also list the domain "mail\&.domain\&.com", which is an alias for
+domain\&.com\&. The
+Courier
+mail server will take any address of the form
+<address@mail\&.domain\&.com>, rewrite it as
+<address@domain\&.com>, and attempt to deliver the mail to a local mailbox for that name\&. The third entry does the same for "example\&.com"; mail addressed to
+<address@example\&.com>
+is delivered to the local mailbox
+<address@domain\&.com>\&.
+.SS "alias@hosteddomain"
+.PP
+This is a special local mail delivery rule for
+hosteddomain\-listed domains\&. This rule allows the
+Courier
+mail server accept mail to any
+address@hosteddomain, where "hosteddomain" is a domain listed in the
+hosteddomains
+file, but there is no corresponding account for
+address@hosteddomain\&. To provide delivery instructions for any non\-existing address in a
+hosteddomain\-listed domain:
+.PP
+1) Create the local address
+alias@hosteddomain\&. For example, if the
+hosteddomains
+file contains "example\&.com", create the local account
+alias@example\&.com\&. This should be a normal account, with its own home directory, userid and groupid\&.
+.PP
+2) Create
+$HOME/\&.courier\-default
+file in this account, containing the delivery instructions\&. See the
+\m[blue]\fB\fBdot-courier\fR(5)\fR\m[]\&\s-2\u[1]\d\s+2
+manual page for available delivery instructions\&.
+.PP
+NOTE that
+alias@example\&.com
+must be a real account, not a mail alias\&. If you want to forward
+alias@example\&.com
+to another address, put forwarding instructions in the
+\&.courier\-default
+file\&. However,
+alias@example\&.com
+can be a clone of another account (with the same home directory, userid, and groupid)\&.
+.SS "\(lqWILDCARD DNS\(rq"
+.PP
+Wildcard DNS is supported for hosteddomains by placing a single period character before the domain name\&. For example, the hosted domain entry
+\(lq\&.domain\&.com\(rq
+will cause the
+Courier
+mail server to accept mail for
+\(lqanything\&.domain\&.com\(rq\&.
+.PP
+The
+Courier
+mail server will accept mail for <\fIaddress@any\&.thing\&.domain\&.com\fR> and attempt to deliver it to the local mailbox <\fIaddress@any\&.thing\&.domain\&.com\fR>, and if that fails then attempt to deliver the mail to the local mailbox <\fIaddress@\&.thing\&.domain\&.com\fR>, then finally <\fIaddress@\&.domain\&.com\fR>
+.if n \{\
+.sp
+.\}
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBNote\fR
+.ps -1
+.br
+.PP
+There is a period after the \*(Aq@\*(Aq character\&. If you want all mail for
+\(lqany\&.thing\&.domain\&.com\(rq
+to be delivered as though it were sent to
+\(lqdomain\&.com\(rq, you should define an alias for the domain, for example:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+domain\&.com
+\&.domain\&.com<TAB>domain\&.com
+.fi
+.if n \{\
+.RE
+.\}
+.sp .5v
+.RE
+.SH "SEE ALSO"
+.PP
+\m[blue]\fB\fBesmtpd\fR(8)\fR\m[]\&\s-2\u[2]\d\s+2\&.
+.SH "AUTHOR"
+.PP
+\fBSam Varshavchik\fR
+.RS 4
+Author
+.RE
+.SH "NOTES"
+.IP " 1." 4
+\fBdot-courier\fR(5)
+.RS 4
+\%http://www.courier-mta.org/dot-courier.html
+.RE
+.IP " 2." 4
+\fBesmtpd\fR(8)
+.RS 4
+\%http://www.courier-mta.org/esmtpd.html
+.RE

@@ -1,0 +1,281 @@
+'\" t
+.\"<!-- Copyright 1998 - 2009 Double Precision, Inc.  See COPYING for -->
+.\"<!-- distribution information. -->
+.\"     Title: makesmtpaccess, makesmtpaccess-msa
+.\"    Author: Sam Varshavchik
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 07/24/2017
+.\"    Manual: Double Precision, Inc.
+.\"    Source: Courier Mail Server
+.\"  Language: English
+.\"
+.TH "MAKESMTPACCESS, MAKE" "8" "07/24/2017" "Courier Mail Server" "Double Precision, Inc."
+.\" -----------------------------------------------------------------
+.\" * Define some portability stuff
+.\" -----------------------------------------------------------------
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.\" http://bugs.debian.org/507673
+.\" http://lists.gnu.org/archive/html/groff/2009-02/msg00013.html
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
+.SH "NAME"
+makesmtpaccess \- Build ESMTP server access file
+.SH "SYNOPSIS"
+.HP \w'\fBmakesmtpaccess\fR\ 'u
+\fBmakesmtpaccess\fR
+.HP \w'\fBmakesmtpaccess\-msa\fR\ 'u
+\fBmakesmtpaccess\-msa\fR
+.SH "DESCRIPTION"
+.PP
+\fBmakesmtpaccess\fR
+rebuilds the contents of the
+@sysconfdir@/smtpaccess\&.dat
+database from the contents of the files in the
+@sysconfdir@/smtpaccess
+directory\&. When the
+\fBesmtpd\fR
+script starts
+\fBcouriertcpd\fR, the script specifies
+@sysconfdir@/smtpaccess\&.dat
+file to control access to the
+Courier
+mail server\*(Aqs ESMTP daemon\&. The
+\fBmakesmtpaccess\fR
+script must be run before any changes in the
+@sysconfdir@/smtpaccess
+directory take effect\&.
+.PP
+The
+\m[blue]\fB\fBcouriertcpd\fR(8)\fR\m[]\&\s-2\u[1]\d\s+2
+manual page describes the general format of access files\&.
+.PP
+The default
+Courier
+mail server configuration uses the same access file,
+@sysconfdir@/smtpaccess\&.dat
+for both the regular ESMTP server, and the message submission server on port 587 (\m[blue]\fBRFC 2476\fR\m[]\&\s-2\u[2]\d\s+2)\&. It is possible to use different access files\&. To do so, create a different access file, edit
+@sysconfdir@/esmtpd\-msa, and set
+\fBACCESSFILE\fR
+to the filename of the access file directory (the directory containing the plain text files, not the \&.dat file)\&. Then, use
+\fBmakesmtpaccess\-msa\fR
+instead of
+\fBmakesmtpaccess\fR
+to build the \&.dat file\&.
+.SS "The smtpaccess configuration file"
+.PP
+The
+\m[blue]\fB\fBcouriertcpd\fR(8)\fR\m[]\&\s-2\u[1]\d\s+2
+manual page describes the generic format of the access file\&. The access file specifies what should be done with connections from defined IP address ranges\&. The basic choices are to accept or reject the connection\&. Also, the generic format of the access file allows arbitrary environment variables to be set based on the connection\*(Aqs remote IP address\&.
+.PP
+The
+Courier
+mail server\*(Aqs ESMTPD server understands the following environment variables, which may be set in the access file:
+.PP
+BLOCK
+.RS 4
+If this variable is set to a non\-empty value, all mail will be rejected for this connection\&. The contents of the environment variable will be used as the error message\&. This is not the same as the
+\fBcouriertcpd\fR
+access file setting that immediately drops the connection\&. The incoming connection is accepted, but every message will be rejected\&.
+.RE
+.PP
+FAXRELAYCLIENT
+.RS 4
+Allow the client to send faxes via the
+\m[blue]\fB\fBcourierfax\fR(8)\fR\m[]\&\s-2\u[3]\d\s+2
+module\&.
+.if n \{\
+.sp
+.\}
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBNote\fR
+.ps -1
+.br
+When ESMTP authentication is enabled, a successful authentication automatically sets
+\fBFAXRELAYCLIENT\fR\&.
+.sp .5v
+.RE
+.RE
+.PP
+RELAYCLIENT
+.RS 4
+Allow the client to relay mail\&.
+.if n \{\
+.sp
+.\}
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBNote\fR
+.ps -1
+.br
+When ESMTP authentication is enabled, a successful authentication automatically sets
+\fBRELAYCLIENT\fR\&.
+.sp .5v
+.RE
+.RE
+.PP
+The following options are typically set globally in the
+esmtpd
+configuration file, but may be overriden in the
+smtpaccess
+configuration file:
+.PP
+BOFHCHECKDNS
+.RS 4
+Do not check the return address\*(Aqs domain in DNS if this environment variable is set to
+0\&. The default value of
+\fBBOFHCHECKDNS\fR
+is 1\&.
+.if n \{\
+.sp
+.\}
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBNote\fR
+.ps -1
+.br
+Turning off the DNS check disables a number of options in the
+bofh
+configuration file\&. See
+\m[blue]\fB\fBcourier\fR(8)\fR\m[]\&\s-2\u[4]\d\s+2
+for more information\&.
+.sp .5v
+.RE
+.RE
+.PP
+BOFHCHECKHELO
+.RS 4
+Set this variable to
+1
+to check the
+\fIhostname\fR
+argument to the ESMTP HELO/EHLO command, as follows:
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+A
+\fIhostname\fR
+that\*(Aqs actually an IP address, and is the same as the connecting ESMTP client\*(Aqs IP address, is valid\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+Otherwise
+\fIhostname\fR
+should be a valid DNS name with
+MX
+and/or
+A
+records, with at least one record matching the connecting ESMTP client\*(Aqs IP address\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+An ESMTP client with relaying privileges (either due to
+\fBRELAYCLIENT\fR
+explicitly set, or if it succesfully authenticates) may use anything for an EHLO/HELO\&. The EHLO/HELO argument coming from an authenticated/relaying client is not checked\&.
+.RE
+.RE
+.PP
+BOFHNOEXPN
+.RS 4
+Disable the
+EXPN
+command if this environment variable is set to
+1\&.
+.RE
+.PP
+BOFHNOVRFY
+.RS 4
+Disable the
+VRFY
+command if this environment variable is set to
+1\&.
+.RE
+.PP
+Other useful environment variables are listed in the
+\m[blue]\fB\fBsubmit\fR(8)\fR\m[]\&\s-2\u[5]\d\s+2
+manual page\&.
+.SH "SEE ALSO"
+.PP
+\m[blue]\fB\fBesmtpd\fR(8)\fR\m[]\&\s-2\u[6]\d\s+2,
+\m[blue]\fB\fBcouriertcpd\fR(8)\fR\m[]\&\s-2\u[1]\d\s+2,
+\m[blue]\fB\fBsubmit\fR(8)\fR\m[]\&\s-2\u[5]\d\s+2\&.
+.SH "AUTHOR"
+.PP
+\fBSam Varshavchik\fR
+.RS 4
+Author
+.RE
+.SH "NOTES"
+.IP " 1." 4
+\fBcouriertcpd\fR(8)
+.RS 4
+\%http://www.courier-mta.org/couriertcpd.html
+.RE
+.IP " 2." 4
+RFC 2476
+.RS 4
+\%http://www.rfc-editor.org/rfc/rfc2476.txt
+.RE
+.IP " 3." 4
+\fBcourierfax\fR(8)
+.RS 4
+\%http://www.courier-mta.org/courierfax.html
+.RE
+.IP " 4." 4
+\fBcourier\fR(8)
+.RS 4
+\%http://www.courier-mta.org/courier.html
+.RE
+.IP " 5." 4
+\fBsubmit\fR(8)
+.RS 4
+\%http://www.courier-mta.org/submit.html
+.RE
+.IP " 6." 4
+\fBesmtpd\fR(8)
+.RS 4
+\%http://www.courier-mta.org/esmtpd.html
+.RE

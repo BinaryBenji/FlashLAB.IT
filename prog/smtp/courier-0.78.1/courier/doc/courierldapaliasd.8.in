@@ -1,0 +1,127 @@
+'\" t
+.\"<!-- Copyright 1998 - 2009 Double Precision, Inc.  See COPYING for -->
+.\"<!-- distribution information. -->
+.\"     Title: courierldapaliasd
+.\"    Author: Sam Varshavchik
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 07/24/2017
+.\"    Manual: Double Precision, Inc.
+.\"    Source: Courier Mail Server
+.\"  Language: English
+.\"
+.TH "COURIERLDAPALIASD" "8" "07/24/2017" "Courier Mail Server" "Double Precision, Inc."
+.\" -----------------------------------------------------------------
+.\" * Define some portability stuff
+.\" -----------------------------------------------------------------
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.\" http://bugs.debian.org/507673
+.\" http://lists.gnu.org/archive/html/groff/2009-02/msg00013.html
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
+.SH "NAME"
+courierldapaliasd \- LDAP\-based mail aliasing
+.SH "SYNOPSIS"
+.HP \w'\fBcourierldapaliasd\fR\ 'u
+\fBcourierldapaliasd\fR {start}
+.HP \w'\fBcourierldapaliasd\fR\ 'u
+\fBcourierldapaliasd\fR {stop}
+.HP \w'\fBcourierldapaliasd\fR\ 'u
+\fBcourierldapaliasd\fR {restart}
+.HP \w'\fBcourierldapaliasd\fR\ 'u
+\fBcourierldapaliasd\fR {query} {\fIsource\fR} {\fIaddress\fR}
+.SH "DESCRIPTION"
+.PP
+\fBcourierldapaliasd\fR
+supports mail address aliasing, as implemented by
+\m[blue]\fB\fBmakealiases\fR(8)\fR\m[]\&\s-2\u[1]\d\s+2
+but using an LDAP directory instead of a GDBM or a DB database\&. The term "aliasing" refers to substituting one or more addresses for another address\&. A one\-to\-one substitution results in the
+Courier
+mail server accepting mail for one address, and delivering the mail to another address\&. A one\-to\-many substitution results in the
+Courier
+mail server accepting mail for one address, and delivering a separate copy of the message to every address defined by the alias\&.
+.PP
+\m[blue]\fB\fBmakealiases\fR(8)\fR\m[]\&\s-2\u[1]\d\s+2
+uses a GDBM or a DB database to perform the aliasing function\&.
+\fBcourierldapaliasd\fR
+uses an LDAP directory instead\&.
+.PP
+"\fBcourierldapaliasd start\fR" runs the
+\fBcourierldapaliasd\fR
+process in the background, and should be executed at system startup\&. "\fBcourierldapaliasd stop\fR" stops the background process\&. "\fBcourierldapaliasd restart\fR" restarts the process, and rereads the
+ldapaliasrc
+configuration file to pick up any changes\&.
+\fBcourierldapaliasd restart\fR
+must be executed in order for any changes to
+ldapaliasrc
+to take place\&.
+.PP
+\fBcourierldapaliasd\fR
+runs in the background and opens a persistent connection to the LDAP directory, and checks every recipient address using the persistent connection\&.
+\fBcourierldapaliasd\fR
+automatically starts an adjustable number of multiple processes\&. With persistent connections being used, this allows alias checking to be as efficient and quick as possible\&.
+.PP
+"\fBcourierldapaliasd query \fR\fB\fIsource\fR\fR\fB \fR\fB\fIaddress\fR\fR" is a diagnostic tool\&. It requires that
+\fBcourierldapaliasd\fR
+must already be running in the background; it sends a query for
+\fIaddress\fR
+to the background process, and prints the result\&. Like
+\m[blue]\fB\fBmakealiases\fR(8)\fR\m[]\&\s-2\u[1]\d\s+2, it is possible to create aliases that are accessible only to certain sources of mail, like "esmtp" or "local"\&. The "\fIsource\fR" argument specifies the source of the address, such as "local", "esmtp", or "uucp"\&.
+.SH "CONFIGURATION"
+.PP
+\fBcourierldapaliasd\fR
+requires OpenLDAP client libraries, and is installed automatically if OpenLDAP client libraries are available at installation time\&. The default
+ldapaliasrc
+configuration file contains additional instructions for configuring LDAP\-based aliasing\&.
+.SH "FILES"
+.PP
+@sbindir@/courierldapaliasd
+.PP
+@sysconfdir@/ldapaliasrc
+.SH "SEE ALSO"
+.PP
+\m[blue]\fB\fBdot-courier\fR(5)\fR\m[]\&\s-2\u[2]\d\s+2,
+\m[blue]\fB\fBcourier\fR(8)\fR\m[]\&\s-2\u[3]\d\s+2,
+\m[blue]\fB\fBmakealiases\fR(8)\fR\m[]\&\s-2\u[1]\d\s+2,
+\m[blue]\fB\fBmakeuserdb\fR(8)\fR\m[]\&\s-2\u[4]\d\s+2\&.
+.SH "AUTHOR"
+.PP
+\fBSam Varshavchik\fR
+.RS 4
+Author
+.RE
+.SH "NOTES"
+.IP " 1." 4
+
+\fBmakealiases\fR(8)
+.RS 4
+\%http://www.courier-mta.org/makealiases.html
+.RE
+.IP " 2." 4
+
+\fBdot-courier\fR(5)
+.RS 4
+\%http://www.courier-mta.org/dot-courier.html
+.RE
+.IP " 3." 4
+
+\fBcourier\fR(8)
+.RS 4
+\%http://www.courier-mta.org/courier.html
+.RE
+.IP " 4." 4
+
+\fBmakeuserdb\fR(8)
+.RS 4
+\%http://www.courier-mta.org/makeuserdb.html
+.RE

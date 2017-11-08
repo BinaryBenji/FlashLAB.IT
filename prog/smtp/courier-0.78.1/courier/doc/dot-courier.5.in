@@ -1,0 +1,590 @@
+'\" t
+.\"<!-- Copyright 1998 - 2009 Double Precision, Inc.  See COPYING for -->
+.\"<!-- distribution information. -->
+.\"     Title: dot-courier
+.\"    Author: Sam Varshavchik
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 07/24/2017
+.\"    Manual: Double Precision, Inc.
+.\"    Source: Courier Mail Server
+.\"  Language: English
+.\"
+.TH "DOT\-COURIER" "5" "07/24/2017" "Courier Mail Server" "Double Precision, Inc."
+.\" -----------------------------------------------------------------
+.\" * Define some portability stuff
+.\" -----------------------------------------------------------------
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.\" http://bugs.debian.org/507673
+.\" http://lists.gnu.org/archive/html/groff/2009-02/msg00013.html
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
+.SH "NAME"
+dot-courier \- Local mail delivery instructions
+.SH "SYNOPSIS"
+.sp
+.nf
+$HOME/\&.courier
+
+$HOME/\&.courier\-foo
+
+@sysconfdir@/aliasdir/\&.courier\-foo
+.fi
+.SH "DESCRIPTION"
+.PP
+In most cases delivering mail to an account means simply placing the message in the account\*(Aqs system mailbox, but that does not have to be the case\&. Alternate mail delivery instructions include running a separate program to process the message, or forwarding the message to another address\&. The various
+\&.courier
+files specify some basic mail delivery instructions\&. If sophisticated mail filtering is required, the delivery instructions should include running an external mail filter, such as
+\m[blue]\fB\fBmaildrop\fR(1)\fR\m[]\&\s-2\u[1]\d\s+2\&.
+.PP
+The file
+$HOME/\&.courier
+specifies how messages are delivered to this account\&. If this file does not exist, default instructions set by the system administrator are used\&. The system administrator\*(Aqs default instructions specify the location of the account\*(Aqs system mailbox\&.
+.PP
+In addition to receiving mail addressed
+user@domain, it is also possible for
+user
+to receive mail addressed to
+user\-\fIfoo\fR@domain, for arbitrary values of
+\fIfoo\fR\&. To do this, install
+$HOME/\&.courier\-\fIfoo\fR, with delivery instructions for mail addressed to
+user\-foo@domain\&.
+.PP
+The system administrator can configure the
+Courier
+mail server to accept mail without regard to whether addresses are in uppercase and lowercase\&. In that case the name of a
+\&.courier
+file must contain only lowercase characters\&. In any event, all periods in the address must be replaced with colons\&. For example, to specify delivery instructions for
+user\-Foo\&.Bar@domain, put the delivery instructions in
+~user/\&.courier\-foo:bar\&.
+.PP
+The file
+$HOME/\&.courier\-foo\-default
+specifies delivery instructions for any
+user\-foo\-\fIbar\fR@domain
+address, where
+\fIbar\fR
+can be anything\&. However, it does NOT control mail delivery to
+user\-foo@domain, which is controlled by
+$HOME/\&.courier\-foo\&.
+.PP
+Possible mail delivery instructions include: whether each message should be delivered to a non\-standard mailbox; forwarded to another E\-mail address; or if another program should be executed to handle the message\&. Programs executed from a
+\&.courier
+file have access to some environment variables (see ENVIRONMENT VARIABLES)\&. Programs executed from a
+\-default
+file can read those environment variables to determine the exact E\-mail address the message was delivered to\&.
+.SS "Default delivery instructions"
+.PP
+The
+@sysconfdir@/aliasdir
+directory is searched as the last resort, when all attempts to figure out how to deliver mail to a local address have failed\&.
+.PP
+@sysconfdir@/aliasdir\*(Aqs functionality is very similar to how the
+alias
+account is implemented in Qmail, except that no actual system account is needed\&. If
+<user@example\&.com>
+is a local address, and there is no such system account, nor is there an alias defined for this address, the
+Courier
+mail server attempts to read delivery instructions from
+@sysconfdir@/aliasdir/\&.courier\-user\&.
+.PP
+All the usual aspects of
+\&.courier
+deliveries apply\&. If there is no account that corresponds to the address
+<user\-foo@example\&.com>, the
+Courier
+mail server looks for
+@sysconfdir@/aliasdir/\&.courier\-user\-foo, then
+@sysconfdir@/aliasdir/\&.courier\-user\-default, and finally
+@sysconfdir@/aliasdir/\&.courier\-default\&.
+.PP
+It therefore follows that you can use
+@sysconfdir@/aliasdir/\&.courier\-default
+to specify local mail delivery instructions for addresses that do not exist\&. Combined with dynamic mail delivery instructions (see below), that\*(Aqs one way to specify non\-standard locations of mailboxes\&.
+.SS "Program/mailbox aliases"
+.PP
+The directory
+@sysconfdir@/aliasdir/\&.courier\-:xalias/
+is created and maintained by the
+\m[blue]\fB\fBmakealiases\fR(8)\fR\m[]\&\s-2\u[2]\d\s+2
+script to implement aliases that deliver directly to programs or mailboxes\&. See
+\m[blue]\fB\fBmakealiases\fR(8)\fR\m[]\&\s-2\u[2]\d\s+2
+for more information\&. (This directory corresponds to local addresses that begin with "\&.xalias/", but the
+Courier
+mail server prohibits explicit local addresses that begin with a period)\&.
+.PP
+Additionally,
+\m[blue]\fB\fBmakealiases\fR(8)\fR\m[]\&\s-2\u[2]\d\s+2
+creates subdirectories named
+@sysconfdir@/aliasdir/\&.courier\-:xalias\-\fIprotocol\fR/, where "\fIprotocol\fR" is set by the
+\fB\-m\fR
+option\&.
+.SS "DELIVERY INSTRUCTIONS"
+.PP
+Each
+\&.courier
+file specifies zero or more delivery instructions\&. If the
+\&.courier
+file is zero bytes long, it means that default mail delivery instructions set by the system administrator should be used\&. If the file is not a zero length file, and does not specify any delivery instructions, messages to the corresponding E\-mail address are silently discarded\&.
+.if n \{\
+.sp
+.\}
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBNote\fR
+.ps -1
+.br
+.PP
+If
+$HOME/\&.courier
+does not exist, it is treated as a zero\-length file, resulting in a delivery to a default mailbox\&. If
+$HOME/\&.courier\-foo
+does not exist, it is treated as a non\-existent address, returning the message as undeliverable\&.
+.sp .5v
+.RE
+.PP
+If home directories have global read and execute permissions, the
+Courier
+mail server will be able to reject mail to non\-existent mailboxes right away\&. the
+Courier
+mail server\*(Aqs ESMTP server runs as a non\-privileged process\&. It will not be able to access home directories which do not have global read and execute permissions\&. Therefore, the message will be accepted for delivery, by the
+Courier
+mail server\&. As soon as an attempt to deliver the message is made, the missing
+\&.courier
+file will result in the message being returned as undeliverable\&. However, here the
+Courier
+mail server has to accept the message for delivery first, before generating a non\-delivery report\&.
+.PP
+Delivery instructions in
+\&.courier
+are executed one at a time\&. If the execution of a delivery instruction fails for some reason, the message is either returned as undeliverable, or requeued for another delivery attempt\&. Messages that remain queued for a long period of time are returned as undeliverable\&.
+.if n \{\
+.sp
+.\}
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBNote\fR
+.ps -1
+.br
+.PP
+Even if one delivery instruction fails (and the message is returned as undeliverable) previous delivery instructions in the file will have been completed anyway\&.
+.sp .5v
+.RE
+.PP
+Blank lines in the file are ignored\&. Lines starting with the # character are comments, and are also ignored\&. Otherwise, each line specifies one of three possible delivery instructions: deliver to a system mailbox or a Maildir; run an external program; or forward the message to another address\&.
+.SS "DELIVERY TO A SYSTEM MAILBOX OR A MAILDIR"
+.PP
+Lines that start with the
+\&.
+or the
+/
+character specify a mailbox or a Maildir delivery\&. The line must specify the complete location of the mailbox file, or a Maildir\&. Filenames starting with
+\&.
+are relative to the account\*(Aqs home directory\&. A mailbox file is a traditional mailbox file that\*(Aqs readable by most mail software\&. A Maildir is a directory based mail storage format that offers several advantages over mailbox files\&. Mailbox files must be locked, and therefore they do not permit concurrent mail deliveries\&. The mailbox file must be locked while a new message is appended to it, otherwise multiple messages being delivered at the same time will trample all over each other\&. Maildirs do not require locking, and multiple concurrent deliveries can be made to the same Maildir\&. You can create Maildirs by using the
+\m[blue]\fB\fBmaildirmake\fR(1)\fR\m[]\&\s-2\u[3]\d\s+2
+command\&.
+.if n \{\
+.sp
+.\}
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBNote\fR
+.ps -1
+.br
+.PP
+The
+Courier
+mail server does not implement the "dot\-locking" form of mailbox file locking\&. The
+Courier
+mail server\*(Aqs locking abilities are limited solely to system file locking facilities (namely the
+\fBlockf\fR, or
+\fBflock\fR
+system calls)\&. You can always use
+\m[blue]\fB\fBmaildrop\fR(1)\fR\m[]\&\s-2\u[1]\d\s+2, which offers additional locking options\&.
+.sp .5v
+.RE
+.SS "RUNNING AN EXTERNAL PROGRAM"
+.PP
+Lines that begin with a single
+|
+character run an external program\&. The rest of the line specifies the command to be executed by the shell\&. Long commands can be continued on another line by terminating the previous line with the
+\e
+character\&.
+.PP
+The
+Courier
+mail server runs the specified command, and provides the contents of the message on standard input\&.
+.PP
+The
+Courier
+mail server waits until the external command completes execution before going to the next delivery instruction\&. The
+Courier
+mail server examines the exit code of the external command in order to determine whether the delivery failed, or not\&.
+.PP
+If the external command terminates with the exit code of zero, the next delivery instruction is executed\&. If the command was the last delivery instruction in the file, the message is considered to be successfully delivered\&.
+.PP
+If the external command terminates with the exit code of
+\fB99\fR, any additional delivery instructions in the file are NOT executed, but the message is considered to be successfully delivered\&.
+.PP
+If the external command terminates with the
+\(lqEX_SOFTWARE\(rq
+exit code, which is usually 70, on most platforms, the E\-mail message gets returned as undeliverable, a non\-delivery report, and no further delivery instructions takes place\&.
+.PP
+If the external command terminates with any of the following exit codes:
+\fB64\fR,
+\fB65\fR,
+\fB67\fR,
+\fB68\fR,
+\fB69\fR,
+\fB76\fR,
+\fB77\fR,
+\fB78\fR,
+\fB100\fR, or
+\fB112\fR, the delivery attempt is considered to be failed, and the next course of action gets selected by
+Courier
+mail server\*(Aqs backscatter suppression settings, as described in the
+\(lq\m[blue]\fBBackscatter Suppression\fR\m[]\&\s-2\u[4]\d\s+2\(rq
+section of the installation instructions; see
+\m[blue]\fB\fBcourier\fR(8)\fR\m[]\&\s-2\u[5]\d\s+2
+for more information\&.
+.PP
+If the external command terminates with any other exit code, it is interpreted as a temporary error, and the message will be requeued for another delivery attempt later\&.
+.if n \{\
+.sp
+.\}
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBNote\fR
+.ps -1
+.br
+.PP
+On subsequent delivery attempts, delivery instructions will be carried out from the beginning of the
+\&.courier
+file\&.
+.sp .5v
+.RE
+.SS "DYNAMIC DELIVERY INSTRUCTIONS"
+.PP
+Lines that begin with the
+||
+characters also run an external program\&. The rest of the line specifies the command to be executed by the shell\&. Long commands can be continued on another line by terminating the previous line with the
+\e
+character\&.
+.PP
+However, programs that are executed by the
+||
+instruction, unlike
+|, have their standard output captured, and reinterpreted as additional delivery instructions to be carried out\&. This feature allows an external program to be invoked to generate dynamic delivery instructions to be carried out by the
+Courier
+mail server\&.
+.PP
+The standard output of the external program is read and parsed as if it contained
+\&.courier
+delivery instructions\&. There\*(Aqs a fixed upper limit on the number of bytes in dynamically\-generated delivery instructions\&. For
+glibc, the limit is 8191 bytes, other systems\*(Aqs upper limit should be similar\&.
+.PP
+The dynamically generated delivery instructions may also specify
+||
+instructions, recursively\&. There is an upper limit of four recursive dynamically\-generated delivery instructions\&.
+.PP
+The exit code of the program invoked by the
+||
+instructions are interpreted exactly like the exit code of a program invoked by
+|, with the following exceptions\&. Dynamically\-generated delivery instructions are carried out only if the external program terminates with an exit code of
+\fB0\fR
+or
+\fB99\fR\&. Any other exit code discards any dynamically\-generated delivery instructions\&. All other aspects of exit code treatment of external programs remains the same\&. If the exit code is
+\fB99\fR, the delivery is deemed to be successful, and any additional instructions in the original
+\&.courier
+file are ignored\&. If the exit code is
+\fB0\fR, the remaining instructions in the original
+\&.courier
+file are executed\&.
+.SS "Alias\-based deliveries"
+.PP
+When the
+Courier
+mail server delivers to default delivery instructions in
+@sysconfdir@/aliasdir, those delivery instructions are carried out under the
+Courier
+mail server\*(Aqs installed system user and group id\&. That means that any executed programs or mailboxes are accessed as the
+Courier
+mail server\*(Aqs mail system user and group\&.
+.SS "ENVIRONMENT VARIABLES"
+.PP
+External commands executed from the
+\&.courier
+file will have the following environment variables:
+.PP
+\fBHOME\fR
+.RS 4
+The home directory\&.
+.RE
+.PP
+\fBUSER\fR
+.RS 4
+The recipient\*(Aqs userid\&.
+.RE
+.PP
+\fBSENDER\fR
+.RS 4
+The message envelope return address\&.
+.RE
+.PP
+\fBRECIPIENT\fR
+.RS 4
+The complete receipient address\&.
+.RE
+.PP
+\fBHOST\fR
+.RS 4
+When
+\fBRECIPIENT\fR
+is of the form
+user@domain,
+\fBHOST\fR
+contains the domain part of the address\&.
+.RE
+.PP
+\fBLOCAL\fR
+.RS 4
+When
+\fBRECIPIENT\fR
+is of the form
+user@domain,
+\fBLOCAL\fR
+contains the user part of the address\&.
+.RE
+.PP
+\fBEXT\fR
+.RS 4
+When
+\fBUSER\fR
+is of the form
+$USER\-foobar,
+\fBEXT\fR
+will contain the foobar part\&.
+.RE
+.PP
+\fBEXT2\fR
+.RS 4
+The portion of
+\fBEXT\fR
+that follows the first dash\&.
+.RE
+.PP
+\fBEXT3\fR
+.RS 4
+The portion of
+\fBEXT2\fR
+that follows the first dash\&.
+.RE
+.PP
+\fBEXT4\fR
+.RS 4
+The portion of
+\fBEXT3\fR
+that follows the first dash\&.
+.RE
+.PP
+\fBDEFAULT\fR
+.RS 4
+When delivery instructions for the address
+user\-foo\-bar@domain
+come from the file
+$HOME/\&.courier\-foo\-default,
+\fBDEFAULT\fR
+will contain the bar part\&.
+.RE
+.PP
+\fBUFLINE\fR
+.RS 4
+This environment variable contains the entire
+From_
+header that should be prepended to the message if it is to be delivered to a mailbox\&.
+.RE
+.PP
+\fBRPLINE\fR
+.RS 4
+This environment variable contains the entire
+Return\-Path:
+header\&.
+.RE
+.PP
+\fBDTLINE\fR
+.RS 4
+This environment variable contains the entire
+Delivered\-To:
+header\&.
+.RE
+.if n \{\
+.sp
+.\}
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBNote\fR
+.ps -1
+.br
+.PP
+When the external program reads the message from standard input, the message will NOT have the customary
+From_,
+Return\-Path:, and
+Delivered\-To:
+headers which are customary for locally\-delivered messages\&. The external program can find those headers in the respective environment variables\&. If you have a command that expects to see those headers as a part of the message, you can use the
+\m[blue]\fB\fBpreline\fR(1)\fR\m[]\&\s-2\u[6]\d\s+2
+wrapper to add them to the message\&. For example, the
+\fBprocmail\fR
+mail filter requires those headers\&.
+.sp .5v
+.RE
+.if n \{\
+.sp
+.\}
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBNote\fR
+.ps -1
+.br
+.PP
+The
+\fBmaildrop\fR
+mail filter will not require
+\fBpreline\fR
+if the system administrator correctly configures the
+Courier
+mail server\&. The system administrator can optionally configure the
+Courier
+mail server to recognize
+\fBmaildrop\fR, and activate certain
+\fBmaildrop\fR\-specific optimizations in the
+Courier
+mail server\&. If these arrangemenets have been made, you can run
+\fBmaildrop\fR
+directly from the
+\&.courier
+file, in a straightforward fashion, but those headers will automatically appear in the message, as seen by
+\fBmaildrop\fR\&. Because the message is provided directly on standard input, without using a pipe,
+\fBmaildrop\fR
+will be able to deliver the message directly from the
+Courier
+mail server\*(Aqs message queue, without using a temporary file\&.
+.sp .5v
+.RE
+.SS "FORWARDING"
+.PP
+Lines that do not start with the
+\&.,
+/, or the
+|
+character specify a comma\-separated list of E\-mail addresses to forward the message to\&. If the line starts with either the
+&
+or the
+!
+character, the character is ignored; this is a legacy compatibility option\&.
+.SH "BUGS"
+.PP
+The
+Courier
+mail server\*(Aqs
+\&.courier
+may seem to be exactly like Qmail\*(Aqs
+\&.qmail, but there are some minor differences\&. Qmail, as of 1\&.03, does not implement dynamic delivery instructions\&. The
+Courier
+mail server also uses a slightly different set of return codes which are classified as hard errors\&. The
+Courier
+mail server\*(Aqs implementation of forwarding differs from Qmail\*(Aqs\&. According to Qmail\*(Aqs documentation, if any external command terminates in a permanent or temporary failure, the message is not forwarded to any forwarding address in the
+\&.qmail
+file, even to addresses that precede the failed delivery instruction\&. The message is forwarded only after it is successfully delivered\&. The
+Courier
+mail server forwards messages to addresses immediately\&. Also, in some cases Qmail resets the return address on the message to the address of the account being forwarded\&.
+.PP
+To make things more confusing, there is a configuration setting to have the
+Courier
+mail server read
+$HOME/\&.qmail
+files, instead of
+$HOME/\&.courier\&.
+.SH "SEE ALSO"
+.PP
+\m[blue]\fB\fBdot-forward\fR(1)\fR\m[]\&\s-2\u[7]\d\s+2,
+\m[blue]\fB\fBmaildirmake\fR(1)\fR\m[]\&\s-2\u[3]\d\s+2,
+\m[blue]\fB\fBmaildrop\fR(1)\fR\m[]\&\s-2\u[1]\d\s+2,
+\m[blue]\fB\fBcourier\fR(8)\fR\m[]\&\s-2\u[5]\d\s+2\&.
+.SH "AUTHOR"
+.PP
+\fBSam Varshavchik\fR
+.RS 4
+Author
+.RE
+.SH "NOTES"
+.IP " 1." 4
+\fBmaildrop\fR(1)
+.RS 4
+\%http://www.courier-mta.org/maildrop.html
+.RE
+.IP " 2." 4
+\fBmakealiases\fR(8)
+.RS 4
+\%http://www.courier-mta.org/makealiases.html
+.RE
+.IP " 3." 4
+\fBmaildirmake\fR(1)
+.RS 4
+\%http://www.courier-mta.org/maildirmake.html
+.RE
+.IP " 4." 4
+Backscatter Suppression
+.RS 4
+\%http://www.courier-mta.org/install.html#backscatter
+.RE
+.IP " 5." 4
+
+	  \fBcourier\fR(8)
+	
+.RS 4
+\%http://www.courier-mta.org/courier.html
+.RE
+.IP " 6." 4
+\fBpreline\fR(1)
+.RS 4
+\%http://www.courier-mta.org/preline.html
+.RE
+.IP " 7." 4
+\fBdot-forward\fR(1)
+.RS 4
+\%http://www.courier-mta.org/dot-forward.html
+.RE

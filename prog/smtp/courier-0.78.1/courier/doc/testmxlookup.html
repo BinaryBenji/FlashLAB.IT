@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/><title>testmxlookup</title><link rel="stylesheet" type="text/css" href="style.css"/><meta name="generator" content="DocBook XSL Stylesheets V1.78.1"/><link rel="home" href="#idm255215455152" title="testmxlookup"/><link xmlns="" rel="stylesheet" type="text/css" href="manpage.css"/><meta xmlns="" name="MSSmartTagsPreventParsing" content="TRUE"/><link xmlns="" rel="icon" href="icon.gif" type="image/gif"/><!--
+
+Copyright 1998 - 2009 Double Precision, Inc.  See COPYING for distribution
+information.
+
+--></head><body><div class="refentry"><a id="idm255215455152" shape="rect"> </a><div class="titlepage"/><div class="refnamediv"><h2>Name</h2><p>testmxlookup — Look up mail relays for a domain</p></div><div class="refsynopsisdiv"><h2>Synopsis</h2><div class="cmdsynopsis"><p><code class="command">testmxlookup</code>  [@<em class="replaceable"><code>ip-address</code></em>] [--dnssec] [--udpsize <em class="replaceable"><code>n</code></em>] {<em class="replaceable"><code>domain</code></em>}</p></div></div><div class="refsect1"><a id="idm255219959216" shape="rect"> </a><h2>DESCRIPTION</h2><p>
+<span class="command"><strong>testmxlookup</strong></span> lists the names and IP addresses of mail
+relays that receive mail for the <em class="replaceable"><code>domain</code></em>.
+This is useful in diagnosing mail delivery problems.</p><p>
+<span class="command"><strong>testmxlookup</strong></span> sends a DNS MX query for the specified domain,
+followed by A/AAAA queries, if needed.
+<span class="command"><strong>testmxlookup</strong></span> lists the
+hostname and the IP address of every mail relay, and its MX priority.</p><div class="refsect2"><a id="idm255214625248" shape="rect"> </a><h3>DIAGNOSTICS</h3><p>
+The error message "Hard error" indicates that the domain does not exist,
+or does not have any mail relays. The error message "Soft error" indicates a
+temporary error condition (usually a network failure of some sorts, or the
+local DNS server is down).</p></div><div class="refsect2"><a id="idm255214623824" shape="rect"> </a><h3>OPTIONS</h3><div class="variablelist"><dl class="variablelist"><dt><span class="term"><code class="literal">@ip-address</code></span></dt><dd><p>
+	      Specify the DNS server's IP address, where to send the DNS
+	      query to, overriding the default DNS server addresses read from
+	      <code class="filename">/etc/resolv.conf</code>.
+	    </p><p>
+	      <span class="quote">“<span class="quote">ip-address</span>”</span> must be a literal, numeric,
+	      IP address.
+	    </p></dd><dt><span class="term"><code class="literal">--dnssec</code></span></dt><dd><p>
+	      Enable the <code class="literal">DNSSEC</code> extension. If the DNS
+	      server has <code class="literal">DNSSEC</code> enabled, and the
+	      specified domain's DNS records are signed, the list of
+	      IP addresses is suffixed by <span class="quote">“<span class="quote">(DNSSEC)</span>”</span>, indicating
+	      a signed response.
+	    </p><p>
+	      This is a diagnostic option. Older DNS servers may respond with
+	      an error, to a DNSSEC query.
+	    </p></dd><dt><span class="term"><code class="literal">--udpsize</code> <em class="replaceable"><code>n</code></em></span></dt><dd><p>
+	      Specify that <em class="replaceable"><code>n</code></em> is the largest
+	      <acronym class="acronym">UDP</acronym> packet size that the DNS server may
+	      send. This option is only valid together with
+	      <span class="quote">“<span class="quote">--dnssec</span>”</span>.
+	      If <span class="quote">“<span class="quote">--dnssec</span>”</span> always returns an error, try
+	      <span class="quote">“<span class="quote">--udpsize 512</span>”</span> (the default setting is 1280
+	      bytes, which is adequate for Ethernet, but other kinds of
+	      networks may impose lower limits).
+	    </p></dd></dl></div></div></div><div class="refsect1"><a id="idm255214609536" shape="rect"> </a><h2>SEE ALSO</h2><p>
+<a class="ulink" href="courier.html" target="_top" shape="rect"><span class="citerefentry"><span class="refentrytitle">courier</span>(8)</span></a>,
+<a class="ulink" href="http://www.rfc-editor.org/rfc/rfc1035.txt" target="_top" shape="rect">RFC 1035</a>.</p></div></div></body></html>

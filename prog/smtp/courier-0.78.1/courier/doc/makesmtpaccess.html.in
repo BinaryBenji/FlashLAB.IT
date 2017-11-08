@@ -1,0 +1,97 @@
+<?xml version="1.0"?>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/><title>makesmtpaccess, makesmtpaccess-msa</title><link rel="stylesheet" type="text/css" href="style.css"/><meta name="generator" content="DocBook XSL Stylesheets V1.78.1"/><link rel="home" href="#idm255236798224" title="makesmtpaccess, makesmtpaccess-msa"/><link xmlns="" rel="stylesheet" type="text/css" href="manpage.css"/><meta xmlns="" name="MSSmartTagsPreventParsing" content="TRUE"/><link xmlns="" rel="icon" href="icon.gif" type="image/gif"/><!--
+
+Copyright 1998 - 2009 Double Precision, Inc.  See COPYING for distribution
+information.
+
+--></head><body><div class="refentry"><a id="idm255236798224" shape="rect"> </a><div class="titlepage"/><div class="refnamediv"><h2>Name</h2><p>makesmtpaccess — Build ESMTP server access file</p></div><div class="refsynopsisdiv"><h2>Synopsis</h2><div class="cmdsynopsis"><p><code class="command">makesmtpaccess</code> </p></div><div class="cmdsynopsis"><p><code class="command">makesmtpaccess-msa</code> </p></div></div><div class="refsect1"><a id="idm255240956672" shape="rect"> </a><h2>DESCRIPTION</h2><p>
+<span class="command"><strong>makesmtpaccess</strong></span> rebuilds the contents of the
+<code class="filename">@sysconfdir@/smtpaccess.dat</code> database from the contents of
+the
+files in the <code class="filename">@sysconfdir@/smtpaccess</code> directory. When the
+<span class="command"><strong>esmtpd</strong></span> script starts <span class="command"><strong>couriertcpd</strong></span>, the
+script
+specifies <code class="filename">@sysconfdir@/smtpaccess.dat</code> file to control
+access to
+the <span class="application">Courier</span> mail server's
+ESMTP daemon. The <span class="command"><strong>makesmtpaccess</strong></span> script
+must be
+run before any changes in the <code class="filename">@sysconfdir@/smtpaccess</code>
+directory take effect.</p><p>
+The
+<a class="ulink" href="couriertcpd.html" target="_top" shape="rect"><span class="citerefentry"><span class="refentrytitle">couriertcpd</span>(8)</span></a> manual page
+describes the general format of access files.</p><p>
+The default
+<span class="application">Courier</span>
+mail server configuration uses the same access file,
+<code class="filename">@sysconfdir@/smtpaccess.dat</code> for both the regular ESMTP server,
+and the message submission server on port 587
+(<a class="ulink" href="http://www.rfc-editor.org/rfc/rfc2476.txt" target="_top" shape="rect">RFC 2476</a>).
+It is possible to
+use different access files. To do so, create a different access file, edit
+<code class="filename">@sysconfdir@/esmtpd-msa</code>, and set
+<code class="envar">ACCESSFILE</code> to the
+filename of the access file directory (the directory containing the plain text
+files, not the .dat file).  Then, use <span class="command"><strong>makesmtpaccess-msa</strong></span>
+instead
+of <span class="command"><strong>makesmtpaccess</strong></span> to build the .dat file.</p><div class="refsect2"><a id="idm255235668304" shape="rect"> </a><h3>The <code class="filename">smtpaccess</code> configuration file</h3><p>
+The
+<a class="ulink" href="couriertcpd.html" target="_top" shape="rect"><span class="citerefentry"><span class="refentrytitle">couriertcpd</span>(8)</span></a> manual page
+describes the generic format of the access file.
+The access file specifies
+what should be done with connections from defined IP address ranges.
+The basic choices are to accept or reject the connection.
+Also, the generic format of the access file allows arbitrary environment
+variables to be set based on the connection's remote IP address.</p><p>
+The <span class="application">Courier</span>
+mail server's ESMTPD server understands the following environment variables,
+which may be set in the access file:</p><div class="variablelist"><dl class="variablelist"><dt><span class="term">BLOCK</span></dt><dd><p>
+If this variable is set to a non-empty value,
+all mail will be rejected for this connection.  The
+contents of the environment variable will be used as the error
+message.
+This is not the same as the <span class="command"><strong>couriertcpd</strong></span> access file
+setting that immediately drops the connection.
+The incoming connection is accepted, but every message will be rejected.</p></dd><dt><span class="term">FAXRELAYCLIENT</span></dt><dd><p>
+Allow the client to send faxes via the
+<a class="ulink" href="courierfax.html" target="_top" shape="rect"><span class="citerefentry"><span class="refentrytitle">courierfax</span>(8)</span></a>
+module.</p><div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3><p>
+When ESMTP authentication is enabled, a successful authentication
+automatically sets <code class="envar">FAXRELAYCLIENT</code>.</p></div></dd><dt><span class="term">RELAYCLIENT</span></dt><dd><p>
+Allow the client to relay mail.
+</p><div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3><p>
+When ESMTP authentication is enabled, a successful authentication
+automatically sets <code class="envar">RELAYCLIENT</code>.</p></div></dd></dl></div><p>
+The following options are typically set globally in the
+<code class="filename">esmtpd</code> configuration file, but may be overriden
+in the <code class="filename">smtpaccess</code> configuration file:</p><div class="variablelist"><dl class="variablelist"><dt><span class="term">BOFHCHECKDNS</span></dt><dd><p>
+Do not check the return address's domain in DNS if this environment
+variable is set to <code class="literal">0</code>.
+The default value of <code class="envar">BOFHCHECKDNS</code> is 1.</p><div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3><p>
+Turning off the DNS check disables a number of options in the
+<code class="filename">bofh</code> configuration file.
+See
+<a class="ulink" href="courier.html" target="_top" shape="rect"><span class="citerefentry"><span class="refentrytitle">courier</span>(8)</span></a> for more information.</p></div></dd><dt><span class="term">BOFHCHECKHELO</span></dt><dd><p>
+Set this variable to <code class="literal">1</code> to check the
+<em class="replaceable"><code>hostname</code></em> argument to the
+ESMTP HELO/EHLO command, as follows:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
+A <em class="replaceable"><code>hostname</code></em> that's actually an IP address, and
+is the same as the connecting ESMTP client's IP address, is valid.</p></li><li class="listitem"><p>
+Otherwise <em class="replaceable"><code>hostname</code></em> should be a valid DNS name
+with <code class="literal">MX</code> and/or
+<code class="literal">A</code> records, with at least one record matching the
+connecting ESMTP client's IP address.</p></li><li class="listitem"><p>
+An ESMTP client with relaying privileges (either due to
+<code class="envar">RELAYCLIENT</code> explicitly set, or if it succesfully authenticates)
+may use anything for an EHLO/HELO.
+The EHLO/HELO argument coming from an authenticated/relaying client is not
+checked.</p></li></ul></div></dd><dt><span class="term">BOFHNOEXPN</span></dt><dd><p>
+Disable the <code class="literal">EXPN</code> command if this environment variable
+is set to <code class="literal">1</code>.</p></dd><dt><span class="term">BOFHNOVRFY</span></dt><dd><p>
+Disable the <code class="literal">VRFY</code> command if this environment variable
+is set to <code class="literal">1</code>.</p></dd></dl></div><p>
+Other useful environment variables are listed in the
+<a class="ulink" href="submit.html" target="_top" shape="rect"><span class="citerefentry"><span class="refentrytitle">submit</span>(8)</span></a> manual page.</p></div></div><div class="refsect1"><a id="idm255235629184" shape="rect"> </a><h2>SEE ALSO</h2><p>
+<a class="ulink" href="esmtpd.html" target="_top" shape="rect"><span class="citerefentry"><span class="refentrytitle">esmtpd</span>(8)</span></a>,
+<a class="ulink" href="couriertcpd.html" target="_top" shape="rect"><span class="citerefentry"><span class="refentrytitle">couriertcpd</span>(8)</span></a>,
+<a class="ulink" href="submit.html" target="_top" shape="rect"><span class="citerefentry"><span class="refentrytitle">submit</span>(8)</span></a>.</p></div></div></body></html>

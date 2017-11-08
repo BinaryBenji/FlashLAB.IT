@@ -1,0 +1,278 @@
+'\" t
+.\"<!-- Copyright 1998 - 2009 Double Precision, Inc.  See COPYING for -->
+.\"<!-- distribution information. -->
+.\"     Title: localmailfilter
+.\"    Author: Sam Varshavchik
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 07/24/2017
+.\"    Manual: Double Precision, Inc.
+.\"    Source: Courier Mail Server
+.\"  Language: English
+.\"
+.TH "LOCALMAILFILTER" "7" "07/24/2017" "Courier Mail Server" "Double Precision, Inc."
+.\" -----------------------------------------------------------------
+.\" * Define some portability stuff
+.\" -----------------------------------------------------------------
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.\" http://bugs.debian.org/507673
+.\" http://lists.gnu.org/archive/html/groff/2009-02/msg00013.html
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
+.SH "NAME"
+localmailfilter \- Local mail filtering
+.SH "SYNOPSIS"
+.sp
+.nf
+
+echo @bindir@/maildrop >@sysconfdir@/maildropfilter
+
+mkdir $HOME/\&.mailfilters
+
+vi $HOME/\&.mailfilters/rcptfilter $HOME/\&.mailfilters/rcptfilter\-ext
+
+vi $HOME/\&.mailfilters/smtpfilter $HOME/\&.mailfilters/smtpfilter\-ext
+
+chmod 700 $HOME/\&.mailfilters
+
+chmod 600 $HOME/\&.mailfilters/*
+.fi
+.SH "DESCRIPTION"
+.PP
+The
+\fBmaildrop\fR
+mail filter can be used by the
+Courier
+mail server as a mail filtering engine, rejecting unwanted mail on a per\-recipient basis\&.
+.PP
+The actual filtering interface used by the
+Courier
+mail server does not really require that
+\fBmaildrop\fR
+must be used as a mail filtering engine, it just so happens that
+\fBmaildrop\fR
+has a compatible interface that can be used right out of the box\&. The following brief information can be used to craft a homebrewed mail filter to take
+\fBmaildrop\fR\*(Aqs place\&.
+.PP
+The local mail filter only works for addresses that correspond to local accounts\&. This filtering is not used if the recipient is a remote address on another mail server\&. The local mail filter is disabled by default\&. To enable local mail filtering you will need to initialize the
+@sysconfdir@/maildropfilter
+configuration file to contain the pathname to your local mail filter\&.
+.PP
+Local mail filtering is performed in two distinct phases:
+.PP
+Recipient filters
+.RS 4
+When the
+Courier
+mail server receives an address naming a local mail recipient, the local mail recipient\*(Aqs mail filter is executed before the
+Courier
+mail server acknowledges the address\&. The local mail filter tells the
+Courier
+mail server whether to: A) accept message unconditionally \- the message is whitelisted; B) reject the message unconditionally \- the
+Courier
+mail server tells the other mail server that the recipient address is invalid; or C) accept this recipient, but run the content mail filter, once the message\*(Aqs contents are available\&.
+.RE
+.PP
+Content filters
+.RS 4
+After receiving the contents of the message, the mail filter is executed again for any recipients whose recipient filters used the third option\&. The content filter can now examine the contents of the message, and indicate whether the message should be accepted or rejected\&. Content filtering is not available for alias addresses\&.
+.RE
+.PP
+It should be noted that mail filtering is executed as an integral part of receiving a message from a remote mail server\&. If the message is rejected, the
+Courier
+mail server refuses to accept the message for delivery\&.
+.PP
+The local mail filter will be invoked as follows:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+HOME=$HOME FILTER \-D \fIuid/gid\fR \-M \fIfilter\fR
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+The local mail filter will NOT be invoked as root, so if it needs to access files in the recipient\*(Aqs account, it must be installed setuid to root (as
+\fBmaildrop\fR
+is installed by default)\&.
+.PP
+"\fIuid/gid\fR" is the recipient account\*(Aqs system userid and group id, respectively\&. The recipient account\*(Aqs home directory is placed in the
+\fBHOME\fR
+environment variable, prior to running
+\fIFILTER\fR, and "\fIfilter\fR" is set as follows:
+.PP
+rcptfilter
+.RS 4
+The mail filter is invoked initially when the remote mail server specifies this address as a recipient\&.
+\fIFILTER\fR
+should terminate with one of the following exit codes: 0 \- this sender is acceptable; 99 \- this sender is acceptable, but I want to run the content filter for this the message; any other non\-zero exit code \- the sender is not acceptable, reject the message\&.
+.RE
+.PP
+smtpfilter
+.RS 4
+If
+\fIFILTER\fR
+terminates with exit code
+\fB99\fR,
+\fIFILTER\fR
+runs again with this parameter set to the word
+smtpfilter\&. FILTER will be invoked once the message has been received from the remote mail server, but not yet acknowledged\&. If
+\fIFILTER\fR
+terminates with a non\-zero exit code, the message is rejected\&. If
+\fIFILTER\fR
+terminated with the exit code of zero, the message is accepted\&.
+.RE
+.PP
+rcptfilter\-\fIext\fR, smtpfilter\-\fIext\fR
+.RS 4
+If the recipient created sub\-addresses \- see
+\m[blue]\fB\fBdot-courier\fR(5)\fR\m[]\&\s-2\u[1]\d\s+2
+\- a dash followed by the subaddress "ext" is appended to the name of the filter\&.
+.RE
+.PP
+rcptfilter\-alias\-\fIext\fR
+.RS 4
+This is how
+\fIFILTER\fR
+gets invoked if the address is a locally defined mail alias (ext is the alias name)\&.
+.RE
+.PP
+The
+rcptfilter
+invocation must terminate with a zero exit code when the message originates from a mailing list or any other source that should be considered as "whitelisted"\&. This filtering model does not fit very well with some mail transfer protocols, so unless trusted sources are explicitly declared to be whitelisted, there is a remote possibility that the recipient will be removed from a mailing list because of a poorly\-written mail filter from some other recipient of the same message\&. The 0 return exit code (which is the implied default if no mail filtering is installed) protects the recipient from being adversely affected, in any way, by anyone else\*(Aqs mail filter\&.
+.PP
+The mail filters may print a diagnostic message before rejecting a message\&. The diagnostic message will be returned to the sending mail relay, where possible\&.
+.PP
+The mail filters inherit environment variables that describe the incoming mail\&. The following environment variables are provided by default:
+.PP
+\fBSENDER\fR
+.RS 4
+The return address on the message\&.
+.RE
+.PP
+\fBTCPREMOTEHOST\fR, \fBTCPREMOTEIP\fR
+.RS 4
+When the message is received via ESMTP, these variables specify the remote IP address and the corresponding hostname\&. Hostname is empty if the IP address does not have a reverse DNS record, or is set to "softdnserr" if there was a temporary failure while looking up this IP address\&.
+.RE
+.PP
+\fBBLOCK2\fR
+.RS 4
+The default the
+Courier
+mail server configuration sets this environment variable if the remote IP address is listed in an unsecured relay blacklist\&. See
+@sysconfdir@/esmtpd
+for more information\&. Other environment variables may also be available\&. For mail received via ESMTP, environment variables are usually set in the
+@sysconfdir@/smtpaccess
+configuration file\&.
+.RE
+.SS "maildrop implementation"
+.PP
+Maildrop implements this mail filtering API as follows:
+.PP
+$HOME/\&.mailfilters
+.RS 4
+This directory contains the filtering recipes\&. This directory, and its contents, cannot have any group or world permissions\&.
+.RE
+.PP
+smtpfilter*, rcptfilter*
+.RS 4
+These mail filtering recipes directly correspond to the events defined in the previous section\&. Maildrop\*(Aqs "import" statement can be used to gain access to the environment variables (these mail filters are executed in
+\fBmaildrop\fR\*(Aqs embedded mode)\&. The mail filtering recipes can set the
+\fBEXITCODE\fR
+variable appropriately before terminating, in order to accept or reject the message\&.
+.RE
+.PP
+See
+\m[blue]\fB\fBmaildrop\fR(1)\fR\m[]\&\s-2\u[2]\d\s+2
+for more information\&.
+.SS "Filtering mail to aliases"
+.PP
+The
+@sysconfdir@/aliases
+configuration file is used to mail aliases, see
+\m[blue]\fB\fBmakealiases\fR(8)\fR\m[]\&\s-2\u[3]\d\s+2\&. The system administrator may set aside a reserved local account that will be used to specify a local mail filter for messages addressed to aliases\&. The configuration file
+@sysconfdir@/aliasfilteracct
+specifies the home directory of the mail account that will be used to filter alias recipients\&.
+.PP
+For example, if
+@sysconfdir@/aliasfilteracct
+contains
+/home/admin, then the
+Courier
+mail server runs the mail filter as follows:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+HOME=/home/admin FILTER \-D \fIuid/gid\fR \-M rcptfilter\-alias\-\fIname\fR
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+Here, "uid/gid" is owner uid and gid of the specified directory NOTE: "name" is a fully qualified address, and the local aliases listed in
+@sysconfdir@/aliases
+do not typically include the domain name\&. If defines an alias called "system", for example, the
+\fB\-M\fR
+option will probably be "system@example\&.com", if
+example\&.com
+is the contents of
+@sysconfdir@/me
+configuration file\&.
+.PP
+Unfortunately, currently it is not possible to specify content filters (a\&.k\&.a\&. smtpfilters) for aliases, only recipient filters\&.
+.SH "FILES"
+.PP
+@sysconfdir@/maildropfilter
+.RS 4
+Local mail filtering engine\&.
+.RE
+.PP
+@sysconfdir@/aliasfilteracct
+.RS 4
+Account that is used to filter mail to aliases\&.
+.RE
+.SH "SEE ALSO"
+.PP
+\m[blue]\fB\fBcourierfilter\fR(8)\fR\m[]\&\s-2\u[4]\d\s+2,
+\m[blue]\fB\fBmaildrop\fR(1)\fR\m[]\&\s-2\u[2]\d\s+2\&.
+.SH "AUTHOR"
+.PP
+\fBSam Varshavchik\fR
+.RS 4
+Author
+.RE
+.SH "NOTES"
+.IP " 1." 4
+\fBdot-courier\fR(5)
+.RS 4
+\%http://www.courier-mta.org/dot-courier.html
+.RE
+.IP " 2." 4
+\fBmaildrop\fR(1)
+.RS 4
+\%http://www.courier-mta.org/maildrop.html
+.RE
+.IP " 3." 4
+\fBmakealiases\fR(8)
+.RS 4
+\%http://www.courier-mta.org/makealiases.html
+.RE
+.IP " 4." 4
+\fBcourierfilter\fR(8)
+.RS 4
+\%http://www.courier-mta.org/courierfilter.html
+.RE

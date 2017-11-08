@@ -1,0 +1,353 @@
+'\" t
+.\"<!-- Copyright 1998 - 2009 Double Precision, Inc.  See COPYING for -->
+.\"<!-- distribution information. -->
+.\"     Title: submit
+.\"    Author: Sam Varshavchik
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 07/24/2017
+.\"    Manual: Double Precision, Inc.
+.\"    Source: Courier Mail Server
+.\"  Language: English
+.\"
+.TH "SUBMIT" "8" "07/24/2017" "Courier Mail Server" "Double Precision, Inc."
+.\" -----------------------------------------------------------------
+.\" * Define some portability stuff
+.\" -----------------------------------------------------------------
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.\" http://bugs.debian.org/507673
+.\" http://lists.gnu.org/archive/html/groff/2009-02/msg00013.html
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
+.SH "NAME"
+submit \- Submit a new message to the Courier mail server
+.SH "SYNOPSIS"
+.HP \w'\fB@bindir@/submit\fR\ 'u
+\fB@bindir@/submit\fR [\-expn=\fIaddress\fR] [\-vrfy=\fIaddress\fR] [\-vhost=\fIaddress\fR] [\-bcc] [\-delay=\fIn\fR] {module} {"\fItype\fR;\ \fIhostid\fR"}
+.SH "DESCRIPTION"
+.PP
+The
+\fBsubmit\fR
+program submits messages to the
+Courier
+mail server for processing\&. The
+\fBsubmit\fR
+program is not intended to be invoked by the end user\&. It is used by the
+Courier
+mail server input modules only\&. The
+\fBsubmit\fR
+program\*(Aqs global read and execute permissions are turned off, so that it can only be executed by a process that\*(Aqs a member of the
+@mailgroup@
+group\&.
+\fBsubmit\fR
+is installed in the
+@libexecdir@/courier
+directory\&.
+.PP
+\fBsubmit\fR
+always takes two command line arguments after any options:
+.PP
+module
+.RS 4
+This argument identifies the module that\*(Aqs running the
+\fBsubmit\fR
+command\&. It must be one of the module names that the
+Courier
+mail server knows about, such as
+local, or
+esmtp\&. This argument determines address rewriting rules\&.
+.RE
+.PP
+"\fItype\fR; \fIhostid\fR"
+.RS 4
+This single argument identifies the source of the message, and must be suitable for the Remote\-MTA: header in delivery status notifications, as specified by RFC 1894\&. For messages that are received via ESMTP, this argument is typically "dns; helohost (hostname [ip\&.address])"\&.
+.RE
+.PP
+The
+\fBsubmit\fR
+program takes the following options:
+.PP
+\-expn=\fIaddress\fR
+.RS 4
+Do not accept a message, instead "expand" the given address\&. If the specified address matches a locally\-defined alias,
+\fBsubmit\fR
+prints the addresses this address expands to\&. If the specified address does not match a locally\-defined alias, the address is displayed by itself\&.
+.RE
+.PP
+\-vrfy=\fIaddress\fR
+.RS 4
+Do not accept a message, instead verify the given address\&.
+\fBsubmit\fR
+prints a suitable message and sets the exit code to indicate whether the specified address is valid, or not\&. If the address matches a local alias,
+\fBsubmit\fR
+will indicate a valid address, and exit\&. If the address does not match a local alias,
+\fBsubmit\fR
+checks if this address is deliverable by any output protocol module\&. If so,
+\fBsubmit\fR
+will indicate a valid address, and exit\&. Otherwise,
+\fBsubmit\fR
+prints a "User unknown" error message, and exits\&.
+.RE
+.PP
+\-bcc
+.RS 4
+If no recipients are given, obtain the list of recipients from
+Bcc:
+headers only\&. Normally, if no recipients are specified,
+\fBsubmit\fR
+reads the list of recipients from the
+To:,
+Cc:
+and
+Bcc:
+headers (Bcc:
+headers are always removed)\&. The
+\-bcc
+option ignores
+To:
+and
+Cc:
+headers for this purpose\&. This option is ignored if an explicit recipient list is specified (see below)\&.
+.RE
+.PP
+\-delay=\fIn\fR
+.RS 4
+Wait
+\fIn\fR
+seconds before delivering the message\&. If not specified, delivery begins after waiting the amount of time specified by the
+@sysconfdir@/submitdelay
+configuration time (default: 0 seconds \-\- immediate delivery)\&.
+.RE
+.PP
+\-vhost=\fIaddress\fR
+.RS 4
+Append
+\(lq\&.\fIaddress\fR\(rq
+to names of all configuration files Courier reads while processing this message\&.
+.RE
+.SH "RESPONSES FROM SUBMIT"
+.PP
+All replies from
+\fBsubmit\fR
+follow the format of SMTP responses, as defined in RFC822\&.
+.PP
+To summarize: the responses are one or more lines long\&. Every line in the response instead of the last one consists of a three\-digit numerical code, a dash, then arbitrary text\&. The last line (or the only line of the response) starts with a three\-digit numerical code, a single space, and arbitrary text\&. The first digit of the numerical code indicates whether the response indicates success, or failure\&. If the first digit is 5, the response indicates a permanent failure\&. If the first digit is 4, the response indicates a temporary failure (the message or the address should be resubmitted later)\&. If the first digit is not 4 or 5, the response indicates success, or acceptance\&.
+.SH "MESSAGE SUBMISSION"
+.PP
+Unless either
+\fB\-expn\fR
+or
+\fB\-vrfy\fR
+option is specified,
+\fBsubmit\fR
+reads the message envelope and contents from standard input, as follows\&. All input and output to
+\fBsubmit\fR
+consists of newline\-terminated (NOT carriage return/newline terminated) lines of text\&.
+.PP
+\fBsubmit\fR
+reads the first line of text, which specifies the envelope sender address\&. The line is formatted as follows:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+address<tab>format<tab>envid
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+<tab>
+is the ASCII tab character\&. The address may be an empty string, optionally followed by tab, then "format", another tab, then "envid"\&.
+.PP
+\fIformat\fR
+is one or more chatacters that specify delivery status notification processing, and other message options\&. The \*(AqF\*(Aq character specifies that delivery status notifications should include the entire message, \*(AqH\*(Aq specifies just the headers of the message should be included\&. Absence of either \*(AqF\*(Aq or \*(AqH\*(Aq specifies no preference\&. "S{keyword}" specifies the optional SECURITY extension keyword for this message\&. The \*(AqV\*(Aq character in
+\fIformat\fR
+sets the VERP extension flag for this message\&.
+.PP
+\fIenvid\fR
+is the original message envelope ID, that will be shown on any delivery status notifications\&. NOTE:
+\fIenvid\fR
+must be specified using xtext encoding (see the relevant RFCs)\&.
+.PP
+After reading the first line of text,
+\fBsubmit\fR
+prints a response (see "RESPONSES FROM SUBMIT", above)\&. If the response is a failure,
+\fBsubmit\fR
+terminates immediately\&. Otherwise,
+\fBsubmit\fR
+then reads one or more envelope recipients\&.
+.PP
+Each envelope recipient is read as a single non\-empty line of text, formatted as follows:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+address<tab>dsn<tab>orecipient
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+\fIaddress\fR
+is a non\-empty recipient E\-mail address, optionally followed by the tab character, then zero or more characters specifying
+\fIdsn\fR, then a tab character, then the
+\fIorecipient\fR
+value\&.
+.PP
+\fIdsn\fR
+is zero or more of the following characters: S \- send a delivery status notification upon a successful delivery to this address, F \- send a DSN upon a failed delivery, D \- send a DSN upon a mail delay, N \- never send a DSN\&.
+\fIorecipient\fR
+is the "Original Recipient", as specified in RFC1894, using xtext encoding\&.
+.PP
+\fBsubmit\fR
+will print a response to each recipient (see "RESPONSES FROM SUBMIT", above)\&. If at least one recipient address has been succesfully specified, a blank line is read to specify end of recipient list, which is followed by the entire message, headers and body\&.
+.PP
+A single blank line terminates the list of recipients\&. That is followed by the message itself, until end of file\&.
+.PP
+The blank line can be present before even a the first recipient is specified\&. If so,
+\fBsubmit\fR
+obtains the list of recipient from the message\*(Aqs headers\&.
+.PP
+\fBsubmit\fR
+reads the message headers and body until end\-of\-file\&. Then,
+\fBsubmit\fR
+prints a response (see above), indicating whether or not the message was accepted for delivery, and terminates\&.
+.SH "ADDRESS REWRITING"
+.PP
+Each recipient address (whether specified explicitly, or obtained from the message headers), will be rewritten according to the rewriting rules specified by the input module\&. Each address in the headers of the message will also be rewritten\&.
+.PP
+After rewriting each recipient address,
+\fBsubmit\fR
+will search the aliases\&.dat file for this address, to see if it represents a locally defined alias\&. Submit searches
+@libexecdir@/courier/modules/\fImodule\fR/aliases\&.dat
+and
+@sysconfdir@/aliases\&.dat
+(actual locations may be changed by the system administrator)\&. If the address is found, the recipient address will be replaced by the addresses defined in the
+aliases\&.dat
+file\&.
+.SH "ENVIRONMENT VARIABLES"
+.PP
+\fBsubmit\fR
+also reads the following environment variables to further specify how the message is to be processed:
+.PP
+BLOCK
+.RS 4
+If this variable is set to a non\-empty value, submit will reject every recipient (in effect, rejecting the message)\&. The contents of the environment variable will be used as the error message\&.
+.RE
+.PP
+DSNENVID
+.RS 4
+If envid is not specified, or is blank, and this environment variable is defined, the contents of this variable is used as the original envelope id field for DSNs\&. Note that DSNENVID is copied verbatim into the Original\-Envelope\-Id field (if the message is relayed to another MTA, the
+Courier
+mail server automatically xtext\-encodes it)\&.
+.RE
+.PP
+DSNNOTIFY
+.RS 4
+If the dsn field for a recipient is empty, the contents of this environment variable is used in its place\&. Also, if the recipient list is read from the headers, the contents of this environment variable are used to set the dsn setting\&.
+.RE
+.PP
+DSNRET
+.RS 4
+If the format field for this message is empty, the contents of this environment variable is used in its place\&.
+.RE
+.PP
+NOADDDATE
+.RS 4
+Normally the
+Courier
+mail server adds a
+Date:
+header to the message, if it does not have one\&. If this environment variable is set, the
+Courier
+mail server will not add a
+Date:
+header\&.
+.RE
+.PP
+NOADDMSGID
+.RS 4
+Normally the
+Courier
+mail server adds a
+Message\-Id:
+header to the message, if it does not have it\&. If this environment variable is set, the
+Courier
+mail server will not add a
+Message\-Id:
+header\&.
+.RE
+.PP
+NOADDRREWRITE
+.RS 4
+Normally the
+Courier
+mail server rewrites addresses in the
+From:,
+To:, and
+Cc:
+header fields\&. If this environment variable is set to
+1, the
+Courier
+mail server will not rewrite them\&. If it is set to a higher value, the
+Courier
+mail server will only rewrite it if no
+DKIM\-Signature:
+header field was found\&.
+.RE
+.PP
+MIME
+.RS 4
+Normally the
+Courier
+mail server adds any missing RFC2045 headers to the message\&. The
+\fBMIME\fR
+environment variable can be set to the following values:
+none
+\- do not do any RFC2045 processing whatsoever;
+7bit
+\- if the message contains any 8\-bit text, convert it to
+quoted\-printable
+encoding;
+8bit
+\-if the message contains any quoted\-printable encoded text that can be representing as 8bit\-encoded text, then convert it to 8bit encoding\&.
+.RE
+.SH "SEE ALSO"
+.PP
+\m[blue]\fB\fBcourierpop3d\fR(8)\fR\m[]\&\s-2\u[1]\d\s+2,
+\m[blue]\fB\fBcouriertcpd\fR(8)\fR\m[]\&\s-2\u[2]\d\s+2,
+\m[blue]\fB\fBauthlib\fR(7)\fR\m[]\&\s-2\u[3]\d\s+2\&.
+.SH "AUTHOR"
+.PP
+\fBSam Varshavchik\fR
+.RS 4
+Author
+.RE
+.SH "NOTES"
+.IP " 1." 4
+\fBcourierpop3d\fR(8)
+.RS 4
+\%http://www.courier-mta.org/courierpop3d.html
+.RE
+.IP " 2." 4
+\fBcouriertcpd\fR(8)
+.RS 4
+\%http://www.courier-mta.org/couriertcpd.html
+.RE
+.IP " 3." 4
+\fBauthlib\fR(7)
+.RS 4
+\%http://www.courier-mta.org/authlib.html
+.RE

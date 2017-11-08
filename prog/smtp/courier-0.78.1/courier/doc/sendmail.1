@@ -1,0 +1,409 @@
+'\" t
+.\"<!-- Copyright 1999 - 2011 Double Precision, Inc.  See COPYING for -->
+.\"<!-- distribution information. -->
+.\"     Title: sendmail
+.\"    Author: Sam Varshavchik
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 07/24/2017
+.\"    Manual: Double Precision, Inc.
+.\"    Source: Courier Mail Server
+.\"  Language: English
+.\"
+.TH "SENDMAIL" "1" "07/24/2017" "Courier Mail Server" "Double Precision, Inc."
+.\" -----------------------------------------------------------------
+.\" * Define some portability stuff
+.\" -----------------------------------------------------------------
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.\" http://bugs.debian.org/507673
+.\" http://lists.gnu.org/archive/html/groff/2009-02/msg00013.html
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
+.SH "NAME"
+sendmail \- Send an E\-mail message
+.SH "SYNOPSIS"
+.HP \w'\fBsendmail\fR\ 'u
+\fBsendmail\fR [\fIoption\fR...] [\-\-] [\fIaddress\fR...]
+.HP \w'\fBrmail\fR\ 'u
+\fBrmail\fR [\-f\ \fIsender\fR] {\fIaddress\fR} [\fIaddress\fR...]
+.SH "DESCRIPTION"
+.PP
+The
+\fBsendmail\fR
+command reads an E\-mail message and delivers the message to its recipients\&. This
+\fBsendmail\fR
+command is part of the Courier mail server, although it attempts to emulate the behavior of the original
+\m[blue]\fBsendmail\fR\m[]\&\s-2\u[1]\d\s+2
+MTA\&. Applications written for
+Sendmail
+should be able to use
+Courier
+mail server\*(Aqs
+\fBsendmail\fR\&. This
+\fBsendmail\fR
+wrapper understands most command line arguments used by sendmail 8\&.9\&. Certain sendmail\-specific arguments that make no sense for Courier, (like \-o), are silently ignored\&.
+.PP
+This
+\fBsendmail\fR
+always behaves like the real sendmail with the
+\fB\-oi\fR
+and
+\fB\-t\fR
+options\&. This is how most applications expect it to work\&. Some applications might run sendmail without the
+\fB\-oi\fR
+and
+\fB\-t\fR
+options, and expect sendmail\*(Aqs legacy behavior when those options are not used\&. Those application may have problems with this sendmail wrapper\&.
+.PP
+\fBsendmail\fR
+reads the message from standard input, rewrites its headers appropriately and delivers it to the specified recipients\&.
+.PP
+If at least one E\-mail address is specified on the command line,
+\fBsendmail\fR
+delivers the message to those recipients only\&. If no addresses are specified on the command line,
+\fBsendmail\fR
+reads the message and builds the recipient list from the
+To:,
+Cc:
+and
+Bcc:
+headers\&.
+.PP
+\fBsendmail\fR
+always removes
+Bcc:
+headers before sending the message if recipients are not specified on the command line\&.
+.PP
+Some of the functionality described below is actually implemented by other Courier modules that
+\fBsendmail\fR
+runs automatically\&. This process is transparent to the end user, or the application\&.
+.SS "OPTIONS"
+.PP
+\fB\-f \fR\fB\fIaddress\fR\fR
+.RS 4
+Sets the
+From:
+address\&. This is just the E\-mail address only, not the name\&.
+.RE
+.PP
+\fB\-F "\fR\fB\fIname\fR\fR\fB"\fR
+.RS 4
+Sets the name to put in the
+From:
+header\&.
+.RE
+.PP
+\fB\-N \fR\fB\fIoptions\fR\fR
+.RS 4
+Sets delivery status notification options\&.
+\fIoptions\fR
+is a comma\-separated list of one or more of the following keywords:
+never,
+success,
+fail,
+delay\&. If not specified, the
+\fB\-N\fR
+option defaults to either "delay, fail", or just "fail", depending on systemwide options set by the administrator\&. The "success" keyword sends a return receipt to the sender when the message is succesfully received by each recipient\&. "fail" sends a notice if the message could not be delivered for some reason\&. "delay" sends a notice if the message remains undeliverable for a period of time (but has not yet completely failed)\&. "never" means do not send any notices for any reason, but see BUGS below\&.
+.RE
+.PP
+\fB\-n\fR
+.RS 4
+Do not actually deliver the message, but copy it to standard output, after rewriting all the headers\&.
+.RE
+.PP
+\fB\-o, \-t, \-q\fR
+.RS 4
+These sendmail\-specific options are ignored, because this is not the real sendmail\&.
+.RE
+.PP
+\fB\-R full\fR
+.RS 4
+Requests that delivery status notifications include the original message, in its entirety\&.
+.RE
+.PP
+\fB\-R hdrs\fR
+.RS 4
+Requests that delivery status notifications include just the headers of the original message\&.
+.RE
+.PP
+\fB\-V "\fR\fB\fIenvid\fR\fR\fB"\fR
+.RS 4
+Specifies the original envelope id to be returned in delivery status notifications\&. Of interest only to mail robots\&.
+.RE
+.PP
+\fB\-S "\fR\fB\fIlevel\fR\fR\fB"\fR
+.RS 4
+Specify
+\fIlevel\fR
+as a minimum security level for delivering this message\&. This is a Courier\-specific extension that uses a Courier\-specific SMTP extension\&.
+\fIlevel\fR
+is either "NONE" or "STARTTLS"\&. "NONE" specifies the normal security level (none at all); "STARTTLS" specifies that SSL/TLS must be used when transmitting this message to a remote mail relay, and the remote mail relay must supply a certificate that\*(Aqs signed by a private certificate authority that\*(Aqs configured in Courier\&. See Courier installation notes for more information\&.
+.RE
+.PP
+\fB\-bcc\fR
+.RS 4
+Read
+Bcc:
+headers only\&. Normally, if no recipients are specified,
+\fBsendmail\fR
+obtains the list of recipients by reading the
+To:,
+Cc:
+and
+Bcc:
+headers (Bcc:
+headers are then removed)\&. The
+\-bcc
+option ignores
+To:
+and
+Cc:
+headers for this purpose\&. This option is ignored if an explicit address list is specified on the
+\fBsendmail\fR
+command line\&.
+.RE
+.PP
+\fB\-bs\fR
+.RS 4
+Talk ESMTP on standard input\&. This option is actually implemented by running Courier\*(Aqs ESMTP server, which takes over and provides a complete ESMTP implementation\&.
+.RE
+.PP
+\fB\-verp\fR
+.RS 4
+Use a
+VERP
+for this message\&.
+.RE
+.SS "RETURN ADDRESS"
+.PP
+The return address is the E\-mail address where delivery status notifications (non\-delivery notices, or return receipts) are sent for this message\&.
+.PP
+\fBsendmail\fR
+constructs the envelope sender (the return address),
+userid@host
+as follows, unless the
+\fB\-bs\fR
+option was specified\&. If the
+\fB\-bs\fR
+option is specified the envelope sender is specified via ESMTP commands, of course\&.
+.PP
+If the
+\fB\-f\fR
+option was specified, the address specified by the
+\fB\-f\fR
+option is used\&.
+.PP
+Otherwise, the
+\fIuserid\fR
+portion of the return address is set to the contents of the first environment variable that\*(Aqs defined from the following list:
+\fBMAILSUSER\fR,
+\fBMAILUSER\fR,
+\fBLOGNAME\fR,
+\fBLOGUSER\fR\&. If none of these environment variables are defined, the system account name is used\&.
+.PP
+The
+\fIhost\fR
+portion of the return address is set to the contents of the
+\fBMAILSHOST\fR
+environment variable\&. If
+\fBMAILSHOST\fR
+is not defined,
+\fBMAILHOST\fR
+will be used\&. If neither variable is set, the configured machine name is used\&.
+.PP
+The return address is then subject to the address rewriting rules for the "local" Courier module (the "esmtp" module when the
+\fB\-bs\fR
+flag is specified)\&.
+.PP
+Finally, if the
+\fB\-verp\fR
+option was specified, the return address is VERPed\&.
+.SS "Variable Envelope Return Paths (VERPs)"
+.PP
+A VERP is a return address which contains the recipient address encoded in it\&. Not all MTAs support
+\m[blue]\fBRFC 1894\fR\m[]\&\s-2\u[2]\d\s+2\-based delivery status notifications\&. VERPs permit mailing list software to identify non\-deliverable addresses even in the absence of a machine\-readable DSN\&.
+.PP
+This option exists mainly to support Courier\*(Aqs own mailing list manager\&. At this time, it\*(Aqs the only software in the world that knows how to use this option\&. The
+\m[blue]\fBQmail\fR\m[]\&\s-2\u[3]\d\s+2
+server has very similar functionality, for it\*(Aqs own mailing list manager\&. However, there are many functional differences between the two mail servers, so
+Courier
+mail server\*(Aqs and
+Qmail\*(Aqs mailing list managers are not interchangeable\&.
+.PP
+Except for this detail, Courier\*(Aqs implementation of a VERP is very similar to Qmail\*(Aqs\&. When a message from
+\fIuser@domain\&.com\fR
+is addressed to address X, then return address will be set to
+\fIuser\-Y@domain\&.com\fR, where Y is defined as follows:
+.PP
+1\&. The last @ character in X is changed to the = character\&.
+.PP
+2\&. The remaining characters in X are copied verbatim to Y, except for some special characters like @, +, %, :, and !\&.
+.PP
+3\&. These special characters are replaced with the character +, followed by a two\-character hexadecimal ASCII code for the special character\&.
+.PP
+Using
+\fB\-verp\fR
+for a message to multiple recipients results in Courier generating and transmitting one copy of the message separately to every recipient\&. That\*(Aqs because the return address for every recipient is different, requiring a separate message to be sent\&.
+.PP
+Except in one case\&.
+.PP
+The one exception is when a VERPed message is sent from one Courier server to another Courier server via ESMTP\&. An ESMTP extension will be used to send one message, preserving the VERP status of the message\&. This ESMTP extension is described in the document,
+draft\-varshavchik\-verp\-smtpext, a copy of which is included in Courier\*(Aqs source code\&.
+.SS "SENDER ADDRESS"
+.PP
+\fBsendmail\fR
+sets the contents of the
+From:
+header as follows\&. Note that this is not the same as the return address of the message\&.
+.PP
+If the
+\fB\-bs\fR
+option is specified, none of the following will be applicable\&. All environment variables are ignored when the
+\fB\-bs\fR
+option is used\&.
+.PP
+If the
+From:
+header is present in the message, but the environment variable
+\fBMAILUSER\fR
+is set, the userid portion of the
+From:
+header is replaced by the contents of
+\fBMAILUSER\fR\&.
+.PP
+If the
+From:
+header is present in the message, but the
+\fBMAILHOST\fR
+environment variable is set, the contents of
+\fBMAILHOST\fR
+replaces the host portion of the
+From:
+header\&.
+.PP
+If the
+From:
+header is present in the message, but either the
+\fB\-F\fR
+option was specified, or the
+\fBMAILNAME\fR
+or the
+\fBNAME\fR
+environment variable is set, the contents of the \-F option, or the environment variable, will replace the sender\*(Aqs name in the
+From:
+header\&.
+.PP
+If the
+From:
+header is not present in the message, one is constructed as follows\&. The sender\*(Aqs name is set by the \-F option\&. If the \-F option was not specified, the contents of the
+\fBMAILNAME\fR
+or the
+\fBNAME\fR
+environment variable is used\&. If neither variable is used, the name is looked up from the system account file\&. The userid portion of the address is set by the contents of any one of the following environment variables:
+\fBMAILUSER\fR,
+\fBLOGNAME\fR,
+\fBUSER\fR\&. If none of these variables are set, the system userid is used\&. The host portion of the address is set by the contents of the
+\fBMAILHOST\fR
+environment variable\&. If it is not set, the system name of the server is used\&.
+.SS "EXIT CODE"
+.PP
+\fBsendmail\fR
+exits with exit status of zero if the message was succesfully scheduled for a delivery\&. If there was a problem accepting the message for delivery,
+\fBsendmail\fR
+displays an error message and exits with a non\-zero status\&. The exit status will always be zero when the
+\fB\-bs\fR
+option is used, unless a serious system problem occurs\&.
+.SS "RMAIL"
+.PP
+If called as
+\fBrmail\fR, only a subset of these options are available, namely
+\fB\-f\fR,
+\fB\-verp\fR,
+\fB\-N\fR,
+\fB\-R\fR,
+\fB\-V\fR,
+\fB\-o\fR, and
+\fB\-t\fR\&. Other options are not allowed\&. Additionally, recipient addresses must be explicitly specified on the command line\&. The
+\fBrmail\fR
+alias is intended to be used for receiving mail via UUCP\&. You must install compatible UUCP software separately, and set it up so that it looks for
+\fBrmail\fR
+in Courier\*(Aqs installation directory\&.
+.PP
+When invoked as
+\fBrmail\fR
+this wrapper will refuse to run unless it is invoked by the
+uucp
+user\&. Additionally, the
+\fBUU_MACHINE\fR
+and
+\fBUU_USER\fR
+environment variables must be defined\&. Also, header and address rewriting described in previous paragraphs do not take place; instead, UUCP\-specific header and address rewriting rules will apply\&. See the
+\m[blue]\fB\fBcourieruucp\fR(8)\fR\m[]\&\s-2\u[4]\d\s+2
+manual page for more information\&.
+.SH "BUGS"
+.PP
+There are still some mail gateways out there that do not implement delivery status notifications according to RFC 1894\&. This means that you may get a delivery notice even if
+\fB\-N never\fR
+keyword was specified\&.
+.PP
+Header rewriting rules are similar, but not identical, to Qmail\*(Aqs\&. The precedence of the various environment variables, plus the situations where they\*(Aqre used, are different from Qmail\*(Aqs and may produce different results\&.
+.SH "SEE ALSO"
+.PP
+\m[blue]\fB\fBcourier\fR(8)\fR\m[]\&\s-2\u[5]\d\s+2,
+\m[blue]\fB\fBcourieruucp\fR(8)\fR\m[]\&\s-2\u[4]\d\s+2
+\m[blue]\fB\fBmailq\fR(8)\fR\m[]\&\s-2\u[6]\d\s+2,
+\m[blue]\fB\fBcancelmsg\fR(1)\fR\m[]\&\s-2\u[7]\d\s+2,
+\m[blue]\fBhttp://www\&.sendmail\&.org\fR\m[],
+\m[blue]\fBhttp://www\&.qmail\&.org\fR\m[]\&.
+.SH "AUTHOR"
+.PP
+\fBSam Varshavchik\fR
+.RS 4
+Author
+.RE
+.SH "NOTES"
+.IP " 1." 4
+sendmail
+.RS 4
+\%http://www.sendmail.org/
+.RE
+.IP " 2." 4
+RFC 1894
+.RS 4
+\%http://www.rfc-editor.org/rfc/rfc1894.txt
+.RE
+.IP " 3." 4
+Qmail
+.RS 4
+\%http://www.qmail.org/
+.RE
+.IP " 4." 4
+\fBcourieruucp\fR(8)
+.RS 4
+\%http://www.courier-mta.org/courieruucp.html
+.RE
+.IP " 5." 4
+\fBcourier\fR(8)
+.RS 4
+\%http://www.courier-mta.org/courier.html
+.RE
+.IP " 6." 4
+\fBmailq\fR(8)
+.RS 4
+\%http://www.courier-mta.org/mailq.html
+.RE
+.IP " 7." 4
+\fBcancelmsg\fR(1)
+.RS 4
+\%http://www.courier-mta.org/cancelmsg.html
+.RE

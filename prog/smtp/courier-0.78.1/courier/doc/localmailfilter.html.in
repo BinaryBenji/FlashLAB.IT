@@ -1,0 +1,164 @@
+<?xml version="1.0"?>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/><title>localmailfilter</title><link rel="stylesheet" type="text/css" href="style.css"/><meta name="generator" content="DocBook XSL Stylesheets V1.78.1"/><link rel="home" href="#idm255217495760" title="localmailfilter"/><link xmlns="" rel="stylesheet" type="text/css" href="manpage.css"/><meta xmlns="" name="MSSmartTagsPreventParsing" content="TRUE"/><link xmlns="" rel="icon" href="icon.gif" type="image/gif"/><!--
+
+Copyright 1998 - 2009 Double Precision, Inc.  See COPYING for distribution
+information.
+
+--></head><body><div class="refentry"><a id="idm255217495760" shape="rect"> </a><div class="titlepage"/><div class="refnamediv"><h2>Name</h2><p>localmailfilter — Local mail filtering</p></div><div class="refsynopsisdiv"><h2>Synopsis</h2><div class="informalexample"><pre class="programlisting" xml:space="preserve">
+
+echo @bindir@/maildrop &gt;@sysconfdir@/maildropfilter
+
+mkdir $HOME/.mailfilters
+
+vi $HOME/.mailfilters/rcptfilter $HOME/.mailfilters/rcptfilter-ext
+
+vi $HOME/.mailfilters/smtpfilter $HOME/.mailfilters/smtpfilter-ext
+
+chmod 700 $HOME/.mailfilters
+
+chmod 600 $HOME/.mailfilters/*
+</pre></div></div><div class="refsect1"><a id="idm255221950704" shape="rect"> </a><h2>DESCRIPTION</h2><p>
+The <span class="command"><strong>maildrop</strong></span> mail filter can be used by the
+<span class="application">Courier</span> mail server as a mail
+filtering engine, rejecting unwanted mail on a per-recipient basis.</p><p>
+The actual filtering interface used by the
+<span class="application">Courier</span> mail server does not really
+require that
+<span class="command"><strong>maildrop</strong></span> must be used as a mail filtering engine, it just so
+happens that <span class="command"><strong>maildrop</strong></span> has a compatible interface that can be used
+right out of the box. The following brief information can be used to craft a
+homebrewed mail filter to take <span class="command"><strong>maildrop</strong></span>'s place.</p><p>
+The local mail filter only works for addresses that correspond to local
+accounts. This filtering is not used if the recipient is a remote address on
+another mail server. The local mail filter is disabled by default. To enable
+local mail filtering you will need to initialize the
+<code class="filename">@sysconfdir@/maildropfilter</code> configuration file to contain the
+pathname to your local mail filter.</p><p>
+Local mail filtering is performed in two distinct phases:</p><div class="variablelist"><dl class="variablelist"><dt><span class="term">Recipient filters</span></dt><dd><p>
+When the <span class="application">Courier</span>
+mail server receives an address naming a local mail
+recipient, the local mail recipient's mail filter is executed before
+the <span class="application">Courier</span> mail server acknowledges the
+address. The local mail filter tells the
+<span class="application">Courier</span> mail server
+whether to: A) accept message unconditionally - the message is
+whitelisted; B) reject the message unconditionally - the
+<span class="application">Courier</span> mail server tells the other
+mail server that the recipient address is invalid; or C) accept this
+recipient, but run the content mail filter, once the message's contents
+are available.</p></dd><dt><span class="term">Content filters</span></dt><dd><p>
+After receiving the contents of the message, the mail
+filter is executed again for any recipients whose recipient filters used
+the third option. The content filter can now examine the contents of the
+message, and indicate whether the message should be accepted or rejected.
+Content filtering is not available for alias addresses.</p></dd></dl></div><p>
+It should be noted that mail filtering is executed as an integral part of
+receiving a message from a remote mail server. If the message is rejected,
+the <span class="application">Courier</span> mail server refuses to accept
+the message for delivery.</p><p>
+The local mail filter will be invoked as follows:</p><div class="informalexample"><pre class="programlisting" xml:space="preserve">
+HOME=$HOME FILTER -D <em class="replaceable"><code>uid/gid</code></em> -M <em class="replaceable"><code>filter</code></em>
+</pre></div><p>
+The local mail filter will NOT be invoked as root, so if it needs to access
+files in the recipient's account, it must be installed setuid to root (as
+<span class="command"><strong>maildrop</strong></span> is installed by default).</p><p>
+"<em class="replaceable"><code>uid/gid</code></em>" is the recipient account's system userid and
+group id, respectively. The recipient account's home directory is placed in
+the <code class="envar">HOME</code> environment variable, prior to running <em class="replaceable"><code>FILTER</code></em>,
+and "<em class="replaceable"><code>filter</code></em>" is set as follows:</p><div class="variablelist"><dl class="variablelist"><dt><span class="term"><code class="literal">rcptfilter</code></span></dt><dd><p>
+The mail filter is invoked initially when the
+remote mail server specifies this address as a recipient.
+<em class="replaceable"><code>FILTER</code></em> should terminate with one of the following exit codes:
+0 - this sender is acceptable; 99 - this sender is acceptable, but I want
+to run the content filter for this the message; any other non-zero exit
+code - the sender is not acceptable, reject the message.</p></dd><dt><span class="term"><code class="literal">smtpfilter</code></span></dt><dd><p>
+If <em class="replaceable"><code>FILTER</code></em> terminates with exit
+code <span class="errorcode">99</span>,
+<em class="replaceable"><code>FILTER</code></em> runs again with this
+ parameter set to the word <code class="literal">smtpfilter</code>. FILTER will be
+invoked
+once the message has been received from the remote mail server, but not
+yet acknowledged. If <em class="replaceable"><code>FILTER</code></em> terminates with a
+non-zero exit
+code, the message is rejected. If <em class="replaceable"><code>FILTER</code></em>
+terminated with the
+exit code of zero, the message is accepted.</p></dd><dt><span class="term"><code class="literal">rcptfilter-<em class="replaceable"><code>ext</code></em></code>,  <code class="literal">smtpfilter-<em class="replaceable"><code>ext</code></em></code>
+   </span></dt><dd><p>
+If the recipient created sub-addresses - see
+<a class="ulink" href="dot-courier.html" target="_top" shape="rect"><span class="citerefentry"><span class="refentrytitle">dot-courier</span>(5)</span></a> - a dash followed by the
+subaddress "ext" is appended to the name of the filter.</p></dd><dt><span class="term"><code class="literal">rcptfilter-alias-<em class="replaceable"><code>ext</code></em></code></span></dt><dd><p>
+This is how <em class="replaceable"><code>FILTER</code></em> gets invoked
+if the address is a locally defined mail alias (ext is the alias name).</p></dd></dl></div><p>
+The <code class="literal">rcptfilter</code> invocation must terminate with a zero exit code
+when the message originates from a mailing list or any other source that
+should be considered as "whitelisted". This filtering model does not fit very
+well with some mail transfer protocols, so unless trusted sources are
+explicitly declared to be whitelisted, there is a remote possibility that the
+recipient will be removed from a mailing list because of a poorly-written mail
+filter from some other recipient of the same message. The 0 return exit code
+(which is the implied default if no mail filtering is installed) protects the
+recipient from being adversely affected, in any way, by anyone else's mail
+filter.</p><p>
+The mail filters may print a diagnostic message before rejecting a message.
+The diagnostic message will be returned to the sending mail relay, where
+possible.</p><p>
+The mail filters inherit environment variables that describe the incoming
+mail. The following environment variables are provided by default:</p><div class="variablelist"><dl class="variablelist"><dt><span class="term"><code class="envar">SENDER</code></span></dt><dd><p>
+The return address on the message.</p></dd><dt><span class="term"><code class="envar">TCPREMOTEHOST</code>, <code class="envar">TCPREMOTEIP</code></span></dt><dd><p>
+When the message is received via ESMTP,
+these variables specify the remote IP address and the corresponding
+hostname. Hostname is empty if the IP address does not have a reverse DNS
+record, or is set to "softdnserr" if there was a temporary failure while
+looking up this IP address.</p></dd><dt><span class="term"><code class="envar">BLOCK2</code></span></dt><dd><p>
+The default the <span class="application">Courier</span> mail server
+configuration sets this environment
+variable if the remote IP address is listed in an unsecured relay
+blacklist. See <code class="filename">@sysconfdir@/esmtpd</code> for more information.
+Other environment variables may also be available. For mail received via
+ESMTP, environment variables are usually set in the
+<code class="filename">@sysconfdir@/smtpaccess</code> configuration file.</p></dd></dl></div><div class="refsect2"><a id="idm255216645312" shape="rect"> </a><h3><span class="command"><strong>maildrop</strong></span> implementation</h3><p>
+Maildrop implements this mail filtering API as follows:</p><div class="variablelist"><dl class="variablelist"><dt><span class="term"><code class="filename">$HOME/.mailfilters</code></span></dt><dd><p>
+This directory contains the filtering
+recipes. This directory, and its contents, cannot have any group or world
+permissions.</p></dd><dt><span class="term"><code class="filename">smtpfilter*</code>, <code class="filename">rcptfilter*</code></span></dt><dd><p>
+These mail
+filtering recipes directly correspond to the events defined in the
+previous section. Maildrop's "<code class="literal">import</code>" statement can be used
+to gain access to the environment variables (these mail filters are
+executed in <span class="command"><strong>maildrop</strong></span>'s embedded mode). The mail filtering
+recipes can set the <code class="envar">EXITCODE</code> variable appropriately before
+terminating, in order to accept or reject the message.</p></dd></dl></div><p>
+See
+<a class="ulink" href="maildrop.html" target="_top" shape="rect"><span class="citerefentry"><span class="refentrytitle">maildrop</span>(1)</span></a>
+for more
+information.</p></div><div class="refsect2"><a id="idm255216635200" shape="rect"> </a><h3>Filtering mail to aliases</h3><p>
+The <code class="filename">@sysconfdir@/aliases</code> configuration file is used to
+mail aliases, see
+<a class="ulink" href="makealiases.html" target="_top" shape="rect"><span class="citerefentry"><span class="refentrytitle">makealiases</span>(8)</span></a>.
+The
+system administrator may set aside a reserved local account that will be used
+to specify a local mail filter for messages addressed to aliases. The
+configuration file <code class="filename">@sysconfdir@/aliasfilteracct</code>
+specifies the
+home directory of the mail account that will be used to filter alias
+recipients.</p><p>
+For example, if <code class="filename">@sysconfdir@/aliasfilteracct</code> contains
+<code class="literal">/home/admin</code>, then the
+<span class="application">Courier</span> mail server runs the mail filter
+as follows:</p><div class="informalexample"><pre class="programlisting" xml:space="preserve">
+HOME=/home/admin FILTER -D <em class="replaceable"><code>uid/gid</code></em> -M rcptfilter-alias-<em class="replaceable"><code>name</code></em>
+</pre></div><p>
+Here, "uid/gid" is owner uid and gid of the specified directory NOTE:
+"name" is a fully qualified address, and the local aliases listed in
+<code class="filename">@sysconfdir@/aliases</code> do not typically include the domain name. If
+defines an alias called "system", for example, the
+<code class="option">-M</code> option will probably be
+"<code class="literal">system@example.com</code>", if
+<code class="literal">example.com</code> is the contents of
+<code class="filename">@sysconfdir@/me</code> configuration file.</p><p>
+Unfortunately, currently it is not possible to specify content filters
+(a.k.a. smtpfilters) for aliases, only recipient filters.</p></div></div><div class="refsect1"><a id="idm255216623136" shape="rect"> </a><h2>FILES</h2><div class="variablelist"><dl class="variablelist"><dt><span class="term"><code class="filename">@sysconfdir@/maildropfilter</code></span></dt><dd><p>
+Local mail filtering engine.</p></dd><dt><span class="term"><code class="filename">@sysconfdir@/aliasfilteracct</code></span></dt><dd><p>
+Account that is used to filter mail to aliases.</p></dd></dl></div></div><div class="refsect1"><a id="idm255216618176" shape="rect"> </a><h2>SEE ALSO</h2><p>
+<a class="ulink" href="courierfilter.html" target="_top" shape="rect"><span class="citerefentry"><span class="refentrytitle">courierfilter</span>(8)</span></a>,
+<a class="ulink" href="maildrop.html" target="_top" shape="rect"><span class="citerefentry"><span class="refentrytitle">maildrop</span>(1)</span></a>.</p></div></div></body></html>

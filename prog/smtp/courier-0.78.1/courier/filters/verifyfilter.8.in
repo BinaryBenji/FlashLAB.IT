@@ -1,0 +1,293 @@
+'\" t
+.\"<!-- Copyright 2017 Double Precision, Inc.  See COPYING for -->
+.\"<!-- distribution information. -->
+.\"     Title: verifyfilter
+.\"    Author: Sam Varshavchik
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 07/25/2017
+.\"    Manual: Double Precision, Inc.
+.\"    Source: Courier Mail Server
+.\"  Language: English
+.\"
+.TH "VERIFYFILTER" "8" "07/25/2017" "Courier Mail Server" "Double Precision, Inc."
+.\" -----------------------------------------------------------------
+.\" * Define some portability stuff
+.\" -----------------------------------------------------------------
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.\" http://bugs.debian.org/507673
+.\" http://lists.gnu.org/archive/html/groff/2009-02/msg00013.html
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
+.SH "NAME"
+verifyfilter, verifysmtp \- Verify mail addresses
+.SH "SYNOPSIS"
+.HP \w'\fBfilterctl\fR\ 'u
+\fBfilterctl\fR {[start] | [stop]} verifyfilter
+.HP \w'\fBverifysmtp\fR\ 'u
+\fBverifysmtp\fR {user@domain}
+.SH "DESCRIPTION"
+.PP
+This is a mail filter/tool combination that tries to determine the validity of E\-mail addresses by attempting to contact the mail domain\*(Aqs mail server, and executing a
+\fBRCPT TO\fR
+command\&. There are three ways to use this tool\&.
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+As a shell command, to test an E\-mail address for deliverability\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+As a global mail filter\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+As a local recipient mail filter\&.
+.RE
+.PP
+\fBverifyfilter\fR
+is suitable for handling moderate amount of E\-mail traffic\&. Address validation is expensive, requiring a DNS lookup and an outbound connection to a mail server for every validated address\&.
+\fBverifyfilter\fR
+goes through the same steps that the mail server does when sending mail, including enabling of encryption\&.
+.PP
+\fBverifyfilter\fR
+uses logging and caching, to avoid repeatedly validating the same return address when receiving multiple E\-mails from the same sender; but its caching is rudimentary (a simple log file), and increased logging due to high E\-mail traffic mail delivery may create large log files, impacting performance\&.
+.SS "The verifysmtp command"
+.HP \w'\fB@bindir@/verifysmtp\fR\ 'u
+\fB@bindir@/verifysmtp\fR {user@domain}
+.PP
+The
+\fBverifysmtp\fR
+command creates a network connection to
+\fIdomain\fR\*(Aqs mail server, and checks if it considers the given E\-mail address as valid\&. Two or more E\-mail addresses can be given, and each E\-mail address gets checked individually\&.
+.PP
+\fBverifysmtp\fR
+terminates with a zero exit code if all given E\-mail addresses passed\&. A non\-zero exit code indicates that one or more of the given addresses were rejected\&.
+.SS "The verifyfilter global mail filter"
+.HP \w'\fBfilterctl\fR\ 'u
+\fBfilterctl\fR {[start] | [stop]} verifyfilter
+.PP
+The
+\fBverifyfilter\fR
+global mail filter, if enabled, checks each message\*(Aqs return address\&. The E\-mail message gets rejected if its return address\*(Aqs mail server rejects the return address\&. There\*(Aqs not much sense in accepting mail if its return address is undeliverable\&.
+.PP
+\fBverifyfilter\fR
+ignores messages from authenticated senders, and does not check their return addresses\&.
+.SS "Local recipient mail filter"
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+mkdir @sysconfdir@/maildroprcs
+cp @datadir@/verifysender @sysconfdir@/maildroprcs
+cp @datadir@/verifysenderfull @sysconfdir@/maildroprcs
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+In your
+\fI$HOME\fR:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+mkdir $HOME/\&.trackdir
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+In
+$HOME/\&.mailfilters/rcptfilter:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+include \*(Aq@sysconfdir@/maildroprcs/verifysender\*(Aq
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+Or:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+include \*(Aq@sysconfdir@/maildroprcs/verifysenderfull\*(Aq
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+This alternative provides comparable functionality as the global mail filter, but exposed via the
+\m[blue]\fB\fBlocalmailfilter\fR(7)\fR\m[]\&\s-2\u[1]\d\s+2
+API\&.
+.PP
+With maildrop, a protected wrapper filtering recipe gets installed into
+@sysconfdir@/maildroprcs/verifysender, which invokes
+\fBverifysmtp\fR
+via
+\fBmaildrop\fR\*(Aqs
+\fBsystem\fR
+command\&. The wrapper must be included in this manner, since
+\fBmaildrop\fR
+normally does not allow the
+\fBsystem\fR
+command in the embedded execution mode that\*(Aqs used by the local mail filtering API\&.
+.PP
+The wrapper executes
+\fBverifysmtp\fR
+with a special argument, a single
+\(lq\&.\(rq\&. This is a special parameter that indicates that
+\fBverifysmtp\fR
+should read the E\-mail address from the
+\fISENDER\fR
+environment variable (avoiding issues with shell expansion, and script kiddies)\&.
+.PP
+The
+@sysconfdir@/maildroprcs/verifysender
+wrapper can be suitably, perhaps optionally, included from either the
+rcptfilter
+or the
+smtpfilter
+script\&.
+.SS "Logging and caching"
+.PP
+\fBverifyfilter\fR
+caches the return address it checks\&. Once
+\fBverifyfilter\fR
+verifies that the return address is accepted by the sending domain\*(Aqs mail server, this is logged and additional E\-mail with the same return address gets immediately accepted without contacting the sending domain\*(Aqs mail server to re\-check the same address\&.
+.PP
+Successfully verified return addresses get cached for approximately 2\-3 hours\&. If no other E\-mail with the same address get received before the cache expires that return address gets rechecked the next time it is seen\&. If another E\-mail with the same return address gets received, it is immediately accepted and the email address gets recached\&. Most mailing lists\*(Aq bounce addresses should not cause excessive re\-verification, provided a regular trickle of mailing list traffic\&. This includes mailing list that use per\-message bounce addresses that follow the common VERP convention (Variable Envelope Return Path), see
+\(lqFILES\(rq
+below\&.
+.PP
+As becomes obvious after perusing the contents of the stock
+verifysender
+local mail filter,
+\fBverifysmtp\fR\*(Aqs
+\fB\-t\fR
+gives the name of a scratch directory that
+\fBverifysmtp\fR
+uses for the cache\&. This directory should be set aside for
+\fBverifysmtp\fR, and not used for other purposes\&. The global mail filter shares the scratch directory together with other
+Courier
+functions that work the same way\&.
+.SH "BUGS"
+.PP
+Just because a mail server accepted the
+\fBRCPT TO\fR
+it does not mean that the given E\-mail address can ultimately receive E\-mail\&.
+.PP
+When executed as a shell command or a local recipient mail filter the
+Courier
+mail server\*(Aqs execution environment is not available, and
+\fBverifysmtp\fR
+will not be able to use
+Courier\*(Aqs configuration files, such as
+smtproutes
+and
+authclient, and several others\&. As such,
+\fBverifysmtp\fR\*(Aqs behavior might differ from Courier\*(Aqs, when sending mail\&.
+.SH "FILES"
+.PP
+\fBverifyfilter\fR
+uses the following configuration files\&. Changes to the following files do not take effect until the filter has been stopped and restarted\&.
+.PP
+@sysconfdir@/filters/verifyfilter\-mode
+.RS 4
+If this file exists and contains the word "all",
+\fBverifyfilter\fR
+will create its socket in
+@localstatedir@/allfilters, otherwise the socket will be created in
+@localstatedir@/filters, see
+\m[blue]\fB\fBcourierfilter\fR(8)\fR\m[]\&\s-2\u[2]\d\s+2
+for more information\&.
+.RE
+.PP
+@sysconfdir@/filters/verifyfilter\-logmode
+.RS 4
+This file contains a single line,
+\(lqbase\(rq
+or
+\(lqfull\(rq\&.
+\(lqfull\(rq
+verifies each return address, exactly as given\&. The default
+\(lqbase\(rq
+value strips off any VERP component of the sender\*(Aqs address, before comparing it\&. If the local mailbox portion of the return address contains a dash, the dash and the remaining portion of the return address gets removed\&.
+.sp
+With the default
+\(lqbase\(rq
+logging mode, once the E\-mail address
+<list\-12@example\&.com>
+gets verified, all further addresses like
+<list\-13@example\&.com>
+and
+<list\-foo\-bar@example\&.com>
+are considered as verified, but not
+<anotherlist@example\&.com>\&.
+.RE
+.PP
+@sysconfdir@/filters/verifyfilter\-nthreads
+.RS 4
+This file contains a single numerical value that sets the number of threads created (one thread is used to check each email address)\&. The default number of threads is 10\&.
+.RE
+.SH "SEE ALSO"
+.PP
+\m[blue]\fB\fBcourierfilter\fR(8)\fR\m[]\&\s-2\u[2]\d\s+2,
+\m[blue]\fB\fBlocalmailfilter\fR(7)\fR\m[]\&\s-2\u[1]\d\s+2\&.
+.SH "AUTHOR"
+.PP
+\fBSam Varshavchik\fR
+.RS 4
+Author
+.RE
+.SH "NOTES"
+.IP " 1." 4
+
+	  \fBlocalmailfilter\fR(7)
+	
+.RS 4
+\%http://www.courier-mta.org/localmailfilter.html
+.RE
+.IP " 2." 4
+\fBcourierfilter\fR(8)
+.RS 4
+\%http://www.courier-mta.org/courierfilter.html
+.RE

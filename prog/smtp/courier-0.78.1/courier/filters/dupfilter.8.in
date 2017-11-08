@@ -1,0 +1,99 @@
+'\" t
+.\"<!-- Copyright 1998 - 2007 Double Precision, Inc.  See COPYING for -->
+.\"<!-- distribution information. -->
+.\"     Title: dupfilter
+.\"    Author: Sam Varshavchik
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 07/24/2017
+.\"    Manual: Double Precision, Inc.
+.\"    Source: Courier Mail Server
+.\"  Language: English
+.\"
+.TH "DUPFILTER" "8" "07/24/2017" "Courier Mail Server" "Double Precision, Inc."
+.\" -----------------------------------------------------------------
+.\" * Define some portability stuff
+.\" -----------------------------------------------------------------
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.\" http://bugs.debian.org/507673
+.\" http://lists.gnu.org/archive/html/groff/2009-02/msg00013.html
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
+.SH "NAME"
+dupfilter \- Sample Courier mail filter
+.SH "SYNOPSIS"
+.HP \w'\fBfilterctl\fR\ 'u
+\fBfilterctl\fR {[start] | [stop]} dupfilter
+.SH "DESCRIPTION"
+.PP
+This is an example global mail filter written in C\&. This is a threaded filter that tries to block junk E\-mail by attempting to detect multiple copies of the same message, which are rejected\&. This filter is presented mostly for educational purposes\&. It\*(Aqs method for detecting duplicate messages is rather simplistic, and, over time, ways of defeating it will certainly proliferate\&.
+.PP
+\fBdupfilter\fR
+works by calculating a hash value of the contents of every message it sees\&. Hash values of recent messages are kept in a circular FIFO queue\&. When
+\fBdupfilter\fR
+starts seeing messages with the same hash value, it will reject them\&. The hash value is calculated in such a way as to try to detect minor changes to messages\*(Aq contents that are designed to avoid these kinds of filters, but it\*(Aqs still not a very sophisticated approach, and it can be easily fooled\&.
+.SH "BUGS"
+.PP
+This is not a very smart mail filter\&. The hash function is very simple and is not expected to be very useful\&.
+.PP
+Don\*(Aqt even think of using dupfilter on a machine that either runs a mailing list, or contains mailboxes that subscribe to mailing lists\&. dupfilter likes to bounce mailing list traffic\&.
+.SH "FILES"
+.PP
+\fBdupfilter\fR
+uses the following configuration files\&. Changes to the following files do not take effect until the filter has been stopped and restarted\&.
+.PP
+@sysconfdir@/filters/dupfilter\-hashsize
+.RS 4
+This file contains a single numerical value that sets the size of
+\fBdupfilter\fR\*(Aqs circular FIFO queue\&.
+.RE
+.PP
+@sysconfdir@/filters/dupfilter\-duplevel
+.RS 4
+This file contains a single numerical value that sets how many identical messages
+\fBdupfilter\fR
+will tolerate before blocking them\&. When this many identical messages are seen,
+\fBdupfilter\fR
+will start rejecting all messages with the same content\&.
+.RE
+.PP
+@sysconfdir@/filters/dupfilter\-mode
+.RS 4
+If this file exists and contains the word "all",
+\fBdupfilter\fR
+will create its socket in
+@localstatedir@/allfilters, otherwise the socket will be created in
+@localstatedir@/filters, see
+\m[blue]\fB\fBcourierfilter\fR(8)\fR\m[]\&\s-2\u[1]\d\s+2
+for more information\&.
+.RE
+.PP
+@sysconfdir@/filters/dupfilter\-nthreads
+.RS 4
+This file contains a single numerical value that sets the number of threads created (each thread is used to calculate a message\*(Aqs hash value)\&. The default number of threads is 4\&.
+.RE
+.SH "SEE ALSO"
+.PP
+\m[blue]\fB\fBcourierfilter\fR(8)\fR\m[]\&\s-2\u[1]\d\s+2\&.
+.SH "AUTHOR"
+.PP
+\fBSam Varshavchik\fR
+.RS 4
+Author
+.RE
+.SH "NOTES"
+.IP " 1." 4
+\fBcourierfilter\fR(8)
+.RS 4
+\%http://www.courier-mta.org/courierfilter.html
+.RE

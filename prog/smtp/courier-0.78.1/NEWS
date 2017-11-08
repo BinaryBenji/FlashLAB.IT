@@ -1,0 +1,26 @@
+                                  Courier 0.56
+
+   Contents of this NEWS file:
+
+     Introducing WebMLM
+     The SSL mess
+
+  Introducing WebMLM
+
+   New in Courier 0.56 is the finished version of WebMLM. WebMLM is a
+   web-based interface to couriermlm-managed mailing lists. WebMLM implements
+   nearly all of couriermlm's functionality through a web browser.
+
+   Due to that, couriermlm's template files have changed. After upgrading to
+   this version, you must make a backup copy of all of your customizations to
+   couriermlm's template files, run couriermlm update against each mailing
+   list directory, then reapply your custom template changes. This is
+   mandatory even if you do not plan on using WebMLM.
+
+  The SSL mess
+
+   The default SSL3 setting for TLS_PROTOCOL (and SSL_PROTOCOL, in some
+   cases) in the various services' configuration files (esmtp, imap, pop3,
+   and webmail) no longer accepts legacy SSL2 connections. If you need legacy
+   compatibility with SSL2, change the appropriate setting from SSL3 to
+   SSL23.

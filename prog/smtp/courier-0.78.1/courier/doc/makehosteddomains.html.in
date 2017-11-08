@@ -1,0 +1,115 @@
+<?xml version="1.0"?>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/><title>makehosteddomains</title><link rel="stylesheet" type="text/css" href="style.css"/><meta name="generator" content="DocBook XSL Stylesheets V1.78.1"/><link rel="home" href="#idm255219904208" title="makehosteddomains"/><link xmlns="" rel="stylesheet" type="text/css" href="manpage.css"/><meta xmlns="" name="MSSmartTagsPreventParsing" content="TRUE"/><link xmlns="" rel="icon" href="icon.gif" type="image/gif"/><!--
+
+Copyright 1998 - 2009 Double Precision, Inc.  See COPYING for distribution
+information.
+
+--></head><body><div class="refentry"><a id="idm255219904208" shape="rect"> </a><div class="titlepage"/><div class="refnamediv"><h2>Name</h2><p>makehosteddomains — Build a database of hosted domains</p></div><div class="refsynopsisdiv"><h2>Synopsis</h2><div class="cmdsynopsis"><p><code class="command">makehosteddomains</code> </p></div></div><div class="refsect1"><a id="idm255224359600" shape="rect"> </a><h2>DESCRIPTION</h2><p>
+<span class="command"><strong>makehosteddomains</strong></span> rebuilds the contents of the
+<code class="filename">@sysconfdir@/hosteddomains.dat</code> database from the
+contents of <code class="filename">@sysconfdir@/hosteddomains</code>.
+This can be either a file or a
+directory.  If it's a directory, the contents of all the files in this
+directory are simply concatenated.
+The <span class="command"><strong>makehosteddomains</strong></span> script
+must be run in order for any changes to
+<code class="filename">@sysconfdir@/hosteddomains</code> to take effect.</p><p>
+The function of <code class="filename">@sysconfdir@/hosteddomains</code> is very
+similar to the one of <code class="filename">@sysconfdir@/locals</code>.
+Both configuration files specify
+a list of domains that are considered to be local domains - domains whose
+mailboxes are stored locally.</p><p>
+The difference is that domains listed in <code class="filename">@sysconfdir@/locals</code>
+are removed from addresses before their mailbox is looked up. For example, if
+the domain "<code class="literal">example.com</code>" is listed in <code class="filename">@sysconfdir@/locals</code>,
+then the address <code class="filename">&lt;user@example.com&gt;</code> is delivered to a local
+mailbox named "<code class="literal">user</code>".  If this domain is listed, instead, in
+<code class="filename">@sysconfdir@/hosteddomains</code>, then the address
+<code class="literal">&lt;user@example.com&gt;</code> is delivered to a local mailbox named
+"<code class="literal">user@example.com</code>". Usually you would use
+<code class="filename">@sysconfdir@/locals</code> to specify domains that correspond to your
+local system accounts, that are looked up in your system's password database.
+The <code class="filename">@sysconfdir@/hosteddomains</code> file is usually used when you have
+database-based virtual domains, that are maintained via an LDAP or a MySQL
+server.
+The <span class="application">Courier</span> mail server's LDAP and MySQL
+authentication modules will use the full
+E-mail address to query the LDAP or MySQL server for the location of the local
+mailbox that correspond to the E-mail address.
+The <span class="application">Courier</span> mail server's
+<code class="literal">authuserdb</code> authentication module can also use full E-mail
+addresses.</p><div class="refsect2"><a id="idm255219070384" shape="rect"> </a><h3>Contents of <code class="filename">hosteddomains</code></h3><p>
+The file <code class="filename">@sysconfdir@/hosteddomains</code>
+simply contains a list of domains, one per line, for example:</p><div class="informalexample"><pre class="programlisting" xml:space="preserve">
+domain.com
+example.org
+</pre></div><p>
+Each domain can optionally be followed by a single tab character, in order
+to specify an alias for a domain, for example:</p><div class="informalexample"><pre class="programlisting" xml:space="preserve">
+domain.com
+mail.domain.com&lt;TAB&gt;domain.com
+example.com&lt;TAB&gt;domain.com
+</pre></div><p>
+First, we list the domain "<code class="literal">domain.com</code>" as a hosted domain.
+Then, we also list the domain "<code class="literal">mail.domain.com</code>", which is
+an alias for
+<code class="literal">domain.com</code>.
+The <span class="application">Courier</span> mail server will take any
+address of the form
+<code class="literal">&lt;address@mail.domain.com&gt;</code>, rewrite it as
+<code class="literal">&lt;address@domain.com&gt;</code>, and attempt to deliver the
+mail to a local mailbox for that name.
+The third entry does the same for "<code class="literal">example.com</code>"; mail
+addressed to
+<code class="literal">&lt;address@example.com&gt;</code> is delivered to the local
+mailbox <code class="literal">&lt;address@domain.com&gt;</code>.</p></div><div class="refsect2"><a id="idm255221064976" shape="rect"> </a><h3><code class="literal">alias@hosteddomain</code></h3><p>
+This is a special local mail delivery rule for
+<code class="filename">hosteddomain</code>-listed
+domains. This rule allows the <span class="application">Courier</span>
+mail server accept mail to any
+<code class="literal">address@hosteddomain</code>, where "hosteddomain" is a domain listed in the
+<code class="literal">hosteddomains</code> file, but there is no corresponding account for
+<code class="literal">address@hosteddomain</code>. To provide delivery instructions for any
+non-existing address in a <code class="filename">hosteddomain</code>-listed
+domain:</p><p>
+1) Create the local address <code class="literal">alias@hosteddomain</code>.  For example, if the
+<code class="filename">hosteddomains</code> file contains "example.com", create the local
+account <code class="literal">alias@example.com</code>.  This should be a normal account, with its
+own home directory, userid and groupid.</p><p>
+2) Create <code class="filename">$HOME/.courier-default</code> file in this account,
+containing the delivery instructions. See the
+<a class="ulink" href="dot-courier.html" target="_top" shape="rect"><span class="citerefentry"><span class="refentrytitle">dot-courier</span>(5)</span></a>
+manual page for available delivery instructions.</p><p>
+NOTE that <code class="literal">alias@example.com</code> must be a real account, not a mail
+alias. If you want to forward <code class="literal">alias@example.com</code> to another address, put
+forwarding instructions in the <code class="filename">.courier-default</code> file. However,
+<code class="literal">alias@example.com</code> can be a clone of another account (with the same home
+directory, userid, and groupid).</p></div><div class="refsect2"><a id="idm255219060224" shape="rect"> </a><h3><span class="quote">“<span class="quote">WILDCARD DNS</span>”</span></h3><p>
+Wildcard DNS is supported for hosteddomains by placing a single period
+character before the domain name. For example, the hosted domain entry
+<span class="quote">“<span class="quote">.domain.com</span>”</span>
+will cause the <span class="application">Courier</span>
+mail server to accept mail for
+<span class="quote">“<span class="quote">anything.domain.com</span>”</span>.</p><p>
+The <span class="application">Courier</span> mail server will accept
+mail for
+&lt;<em class="replaceable"><code>address@any.thing.domain.com</code></em>&gt;
+and attempt
+to deliver it to the local mailbox
+&lt;<em class="replaceable"><code>address@any.thing.domain.com</code></em>&gt;,
+and if that fails then attempt to deliver the mail to the local
+mailbox
+&lt;<em class="replaceable"><code>address@.thing.domain.com</code></em>&gt;,
+then finally
+&lt;<em class="replaceable"><code>address@.domain.com</code></em>&gt;</p><div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3><p>
+There is a period after the '@' character. If you want all mail
+for
+<span class="quote">“<span class="quote">any.thing.domain.com</span>”</span>
+to be delivered as though it were sent to
+<span class="quote">“<span class="quote">domain.com</span>”</span>,
+you should define an alias for the domain, for example:
+</p><div class="informalexample"><pre class="programlisting" xml:space="preserve">
+domain.com
+.domain.com&lt;TAB&gt;domain.com
+</pre></div></div></div></div><div class="refsect1"><a id="idm255219051904" shape="rect"> </a><h2>SEE ALSO</h2><p>
+<a class="ulink" href="esmtpd.html" target="_top" shape="rect"><span class="citerefentry"><span class="refentrytitle">esmtpd</span>(8)</span></a>.</p></div></div></body></html>

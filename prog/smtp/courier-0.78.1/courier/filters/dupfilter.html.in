@@ -1,0 +1,49 @@
+<?xml version="1.0"?>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/><title>dupfilter</title><link rel="stylesheet" type="text/css" href="style.css"/><meta name="generator" content="DocBook XSL Stylesheets V1.78.1"/><link rel="home" href="#idm255222695488" title="dupfilter"/><link xmlns="" rel="stylesheet" type="text/css" href="manpage.css"/><meta xmlns="" name="MSSmartTagsPreventParsing" content="TRUE"/><link xmlns="" rel="icon" href="icon.gif" type="image/gif"/><!--
+
+Copyright 1998 - 2009 Double Precision, Inc.  See COPYING for distribution
+information.
+
+--></head><body><div class="refentry"><a id="idm255222695488" shape="rect"> </a><div class="titlepage"/><div class="refnamediv"><h2>Name</h2><p>dupfilter — Sample Courier mail filter</p></div><div class="refsynopsisdiv"><h2>Synopsis</h2><div class="cmdsynopsis"><p><code class="command">filterctl</code>  {[start] |  [stop]}  dupfilter </p></div></div><div class="refsect1"><a id="idm255227202352" shape="rect"> </a><h2>DESCRIPTION</h2><p>
+This is an example global mail filter written in C. This is a threaded
+filter that tries to block junk E-mail by attempting to detect multiple copies
+of the same message, which are rejected.  This filter is presented mostly for
+educational purposes. It's method for detecting duplicate messages is rather
+simplistic, and, over time, ways of defeating it will certainly
+proliferate.</p><p>
+<span class="command"><strong>dupfilter</strong></span> works by calculating a hash value of the contents
+of
+every message it sees.  Hash values of recent messages are kept in a circular
+FIFO queue. When <span class="command"><strong>dupfilter</strong></span> starts seeing messages with the
+same
+hash value, it will reject them.  The hash value is calculated in such a way
+as to try to detect minor changes to messages' contents that are designed to
+avoid these kinds of filters, but it's still not a very sophisticated
+approach, and it can be easily fooled.</p></div><div class="refsect1"><a id="idm255221867776" shape="rect"> </a><h2>BUGS</h2><p>
+This is not a very smart mail filter.  The hash function is very simple and
+is not expected to be very useful.</p><p>
+Don't even think of using dupfilter on a machine that either runs a mailing
+list, or contains mailboxes that subscribe to mailing lists.
+dupfilter likes to bounce mailing list traffic.</p></div><div class="refsect1"><a id="idm255221865872" shape="rect"> </a><h2>FILES</h2><p>
+<span class="command"><strong>dupfilter</strong></span> uses the following configuration files. Changes to
+the following files do not take effect until the filter has been stopped and
+restarted.</p><div class="variablelist"><dl class="variablelist"><dt><span class="term"><code class="filename">@sysconfdir@/filters/dupfilter-hashsize</code></span></dt><dd><p>
+This file contains a single numerical value that sets the size of
+<span class="command"><strong>dupfilter</strong></span>'s circular FIFO queue.</p></dd><dt><span class="term"><code class="filename">@sysconfdir@/filters/dupfilter-duplevel</code></span></dt><dd><p>
+This file
+contains a single numerical value that sets how many identical messages
+<span class="command"><strong>dupfilter</strong></span> will tolerate before blocking them.  When this many
+identical messages are seen, <span class="command"><strong>dupfilter</strong></span> will start rejecting
+all messages with the same content.</p></dd><dt><span class="term"><code class="filename">@sysconfdir@/filters/dupfilter-mode</code></span></dt><dd><p>
+If this file exists
+and contains the word "all", <span class="command"><strong>dupfilter</strong></span> will create its
+socket in <code class="filename">@localstatedir@/allfilters</code>,
+otherwise the socket will be
+created in <code class="filename">@localstatedir@/filters</code>, see
+<a class="ulink" href="courierfilter.html" target="_top" shape="rect"><span class="citerefentry"><span class="refentrytitle">courierfilter</span>(8)</span></a>
+for more information.</p></dd><dt><span class="term"><code class="filename">@sysconfdir@/filters/dupfilter-nthreads</code></span></dt><dd><p>
+This file
+contains a single numerical value that sets the number of threads created
+(each thread is used to calculate a message's hash value). The default
+number of threads is 4.</p></dd></dl></div></div><div class="refsect1"><a id="idm255221849744" shape="rect"> </a><h2>SEE ALSO</h2><p>
+<a class="ulink" href="courierfilter.html" target="_top" shape="rect"><span class="citerefentry"><span class="refentrytitle">courierfilter</span>(8)</span></a>.</p></div></div></body></html>

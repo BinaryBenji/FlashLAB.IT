@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/><title>preline</title><link rel="stylesheet" type="text/css" href="style.css"/><meta name="generator" content="DocBook XSL Stylesheets V1.78.1"/><link rel="home" href="#idm255217362096" title="preline"/><link xmlns="" rel="stylesheet" type="text/css" href="manpage.css"/><meta xmlns="" name="MSSmartTagsPreventParsing" content="TRUE"/><link xmlns="" rel="icon" href="icon.gif" type="image/gif"/><!--
+
+Copyright 1998 - 2009 Double Precision, Inc.  See COPYING for distribution
+information.
+
+--></head><body><div class="refentry"><a id="idm255217362096" shape="rect"> </a><div class="titlepage"/><div class="refnamediv"><h2>Name</h2><p>preline — Prepend legacy mbox headers</p></div><div class="refsynopsisdiv"><h2>Synopsis</h2><div class="cmdsynopsis"><p><code class="command">@bindir@/preline</code>  {<em class="replaceable"><code>program</code></em>} [arg...]</p></div></div><div class="refsect1"><a id="idm255221520464" shape="rect"> </a><h2>DESCRIPTION</h2><p>
+<span class="command"><strong>preline</strong></span> is a wrapper for <span class="command"><strong>program</strong></span>.
+<span class="command"><strong>preline</strong></span> is usually invoked from
+<code class="filename">$HOME/.courier</code>.
+<span class="command"><strong>preline</strong></span> runs <span class="command"><strong>program</strong></span>,
+together with any additional arguments
+specified on the command line.
+<span class="command"><strong>program</strong></span> then receives the message being delivered, with
+some additional headers.
+The additional headers come from the <code class="envar">UFLINE</code>,
+<code class="envar">DTLINE</code>, and <code class="envar">RPLINE</code> environment variables.
+These environment
+variables are initialized by <span class="command"><strong>courierdeliver</strong></span>, which reads
+and executes
+commands from <span class="command"><strong>$HOME/.courier</strong></span>.
+These environment variables contain
+additional headers that should be added to every message that's delivered to a
+local mailbox.</p><p>
+<span class="command"><strong>preline</strong></span> must be used if <span class="command"><strong>program</strong></span>,
+that is executed from
+<code class="filename">$HOME/.courier</code> to deliver mail,
+does not recognize these environment variables.
+<code class="envar">UFLINE</code> contains the <code class="literal">From_</code> line,
+<code class="envar">DTLINE</code> contains the
+<code class="literal">Delivered-To:</code> header, and <code class="envar">RPLINE</code> contains the
+<code class="literal">Return-Path:</code> header. If these headers are not present in
+the message
+that the program reads, you may end up with excessive resources being consumed
+by mail loops or by malfunctioning software which expects to see
+<code class="literal">From_</code> lines in all messages scheduled for local delivery
+(such as <span class="command"><strong>procmail</strong></span>).</p></div><div class="refsect1"><a id="idm255216229168" shape="rect"> </a><h2>EXAMPLE</h2><div class="informalexample"><pre class="programlisting" xml:space="preserve">
+| @bindir@/preline /usr/bin/procmail
+</pre></div><p>
+This is the normal way to arrange for <span class="command"><strong>procmail</strong></span> to handle
+local mail delivery.</p></div><div class="refsect1"><a id="idm255216226112" shape="rect"> </a><h2>SEE ALSO</h2><p>
+<a class="ulink" href="courierpop3d.html" target="_top" shape="rect"><span class="citerefentry"><span class="refentrytitle">courierpop3d</span>(8)</span></a>,
+<a class="ulink" href="couriertcpd.html" target="_top" shape="rect"><span class="citerefentry"><span class="refentrytitle">couriertcpd</span>(8)</span></a>,
+<a class="ulink" href="authlib/authlib.html" target="_top" shape="rect"><span class="citerefentry"><span class="refentrytitle">authlib</span>(7)</span></a>.</p></div></div></body></html>
