@@ -1,4 +1,0 @@
-#!/bin/sh
-
-./threadtest 16 2>&1
-./threadtest 4 2 2>&1
