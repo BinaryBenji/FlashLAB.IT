@@ -38,6 +38,9 @@ makeuserdb
 maildirmake /var/mail/poseidon
 chown -R vmail:vmail /var/mail/poseidon
 /etc/init.d/networking restart
+/etc/init.d/courier-authdaemon restart
+/etc/init.d/courier-pop restart
+/etc/init.d/courier-imap restart
 telnet localhost 25 <<EOF
 ehlo flashlab.itinet.fr
 mail from:root
