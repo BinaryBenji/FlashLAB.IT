@@ -17,7 +17,7 @@ apt-get --assume-yes install postfix
 groupadd vmail -g 5000
 useradd -g vmail -u 5000 vmail -d /home/vmail/ -m
 chown -R vmail:vmail /var/mail
-cp main.cf /etc/postfix
+cp smtp/main.cf /etc/postfix
 touch /etc/postfix/vmailbox
 echo "poseidon@flashlab.itinet.fr poseidon/" >> /etc/postfix/vmailbox
 touch /etc/mailname

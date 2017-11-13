@@ -1,5 +1,5 @@
 #!/bin/bash
-CREATION USER MACHINE POSEIDON
+#CREATION USER MACHINE POSEIDON
 useradd poseidon -d /home/poseidon -m
 passwd poseidon <<EOF
 dieudelamer
