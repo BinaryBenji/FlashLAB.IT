@@ -28,17 +28,16 @@ sleep 5
 /etc/init.d/networking restart
 apt-get --assume-yes install courier-base courier-authdaemon courier-imap courier-pop
 sed -i.bak -E 's/^([ \t]*authmodulelist[ \t]*=[ \t]*).*/\1'"authuserdb"'/' /etc/courier/authdaemonrc
-/etc/init.d/courier-authdaemon restart
 hostname=`hostname -I`
 sudo sed -i.bak -E 's/^([ \t]*ADDRESS[ \t]*=[ \t]*).*/\1'"$hostname"'/' /etc/courier/imapd
 /etc/init.d/courier-imap restart
 userdb poseidon set uid=5000 gid=5000 home=/var/mail/poseidon mail=/var/mail/poseidon
-userdb poseidon set systempw=$(openssl passwd -1 poseidon)
+userdb poseidon set systempw=$(openssl passwd -1 dieudelamer)
 makeuserdb
 maildirmake /var/mail/poseidon
 chown -R vmail:vmail /var/mail/poseidon
 /etc/init.d/networking restart
-/etc/init.d/courier-authdaemon restart
+sleep 5
 /etc/init.d/courier-pop restart
 /etc/init.d/courier-imap restart
 telnet localhost 25 <<EOF
