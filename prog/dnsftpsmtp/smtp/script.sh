@@ -38,6 +38,7 @@ maildirmake /var/mail/poseidon
 chown -R vmail:vmail /var/mail/poseidon
 /etc/init.d/networking restart
 sleep 5
+/etc/init.d/courier-authdaemon restart
 /etc/init.d/courier-pop restart
 /etc/init.d/courier-imap restart
 telnet localhost 25 <<EOF
