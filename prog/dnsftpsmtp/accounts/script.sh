@@ -20,3 +20,5 @@ mkdir /home/zeus/Duga
 mkdir /home/zeus/Ressources
 cp accounts/Infrastructure.xml /home/zeus/Docs/Infra
 chown -R zeus:zeus /home/zeus
+sudo su zeus
+chmod 0700 /home/zeus
