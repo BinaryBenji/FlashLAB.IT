@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>FlashLAB</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="view/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="view/css/heroic-features.css" rel="stylesheet">
+
+  </head>
+
+  <body>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+      <div class="container">
+        <a href="index.php?page="><img src="view/logo2.png" style="height: 40px; width: 40px;"/></a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+          <ul class="navbar-nav ml-auto">
+            <li class="nav-item active">
+              <a class="nav-link" href="index.php?page=">Home</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="index.php?page=inscription">Inscription
+			    <span class="sr-only">(current)</span>
+			  </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="index.php?page=connexion">Connexion</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Page Content -->
+    <div class="container">
+    </br>
+	<form action='index.php?page=registration' method='POST'>
+      <h1>Inscription<h1>
+      <!-- Jumbotron Header -->
+      <header class="jumbotron my-4">
+         <div class="row">
+                <div class="col-lg-12">
+                    
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <input type="text" name="name" class="form-control" placeholder="Votre prenom" id="name" required data-validation-required-message="Please enter your name.">
+                                    <p class="help-block text-danger"></p>
+                                </div>
+                            </div>
+                        </div>
+                    
+                </div>
+          </div>
+		  <div class="row">
+                <div class="col-lg-12">
+                    
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <input type="text" name="surname" class="form-control" placeholder="Votre nom" id="surname" required data-validation-required-message="Please enter your name.">
+                                    <p class="help-block text-danger"></p>
+                                </div>
+                            </div>
+                        </div>
+                    
+                </div>
+          </div>
+		  <div class="row">
+                <div class="col-lg-12">
+                    
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <input type="mail" name="mail" class="form-control" placeholder="Votre adresse e-mail" id="mail" required data-validation-required-message="Indiquez votre adresse e-mail">
+                                    <p class="help-block text-danger"></p>
+                                </div>
+                            </div>
+                        </div>
+                    
+                </div>
+          </div>
+          <div class="row">
+                <div class="col-lg-12">
+                    
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <input type="password" name="pwd" class="form-control" placeholder="Mot de passe" id="pwd" required data-validation-required-message="indiquez votre mot de passe">
+                                    <p class="help-block text-danger"></p>
+                                </div>
+                            </div>
+                        </div>
+                    
+                </div>
+          </div>
+          <div class="row">
+                <div class="col-lg-12">
+                    
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <input type="password" name="cpwd" class="form-control" placeholder="Confirmez votre mot de passe" id="cpwd" required data-validation-required-message="Confirmez votre mot de passe">
+                                    <p class="help-block text-danger"></p>
+                                </div>
+                            </div>
+                        </div>
+                    
+                </div>
+          </div>
+            <input type='submit' name="confirm" class="btn btn-primary" value="Confirmer">
+	</form>
+      <!-- /.row -->
+
+    </div>
+    <!-- /.container -->
+
+
+
+    <!-- Bootstrap core JavaScript -->
+    <script src="view/vendor/jquery/jquery.min.js"></script>
+    <script src="view/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+  </body>
+
+</html>
