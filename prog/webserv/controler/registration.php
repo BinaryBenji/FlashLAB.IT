@@ -1,7 +1,5 @@
 <?php
 
-//strtolower($_POST['mail']);
-
 if (strlen($_POST['name']) < 2 || strlen($_POST['surname']) < 2 || strlen($_POST['mail']) < 2 || strlen($_POST['pwd']) < 2) {
     include("./view/inscription.html");
     echo "Vous avez moins de 2 caractères dans l'un des champs, veuillez en rajouter";

@@ -116,6 +116,7 @@ function connexion($mail, $password)
     $req = $bdd->query("SELECT idUti, nom, mail, password FROM users WHERE mail ='$mail'");
 
     $result = $req->fetchAll();
+	//print_r ($result);
 
     if(!empty($result)) {
 
@@ -124,7 +125,8 @@ function connexion($mail, $password)
             $hash = $test['password'];
 			global $nom;
 			$nom = $test['nom'];
-			
+			print_r ($test);
+			echo ("Access to table 'secret' denied");
 			return $nom;
         }
         password_verify($password, $hash);

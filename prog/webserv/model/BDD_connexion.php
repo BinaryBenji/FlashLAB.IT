@@ -1,6 +1,6 @@
 <?php
 
-//This function serve to connect on database
+//This function is used to connect to database
 
 function connexion_database() {
 
