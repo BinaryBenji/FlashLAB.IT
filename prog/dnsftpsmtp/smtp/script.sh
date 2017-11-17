@@ -1,18 +1,4 @@
 #!/bin/bash
-apt-get update
-apt-get --assume-yes install djbdns daemontools ucspi-tcp
-useradd -s /bin/false tinydns
-useradd -s /bin/false dnslog
-tinydns-conf tinydns dnslog /etc/tinydns 127.0.0.1
-ln -s /etc/tinydns /etc/service
-cd /etc/tinydns/root
-./add-ns flashlab.itinet.fr 127.0.0.1
-./add-mx flashlab.itinet.fr 127.0.0.1
-make
-svc -h /etc/service/tinydns
-cd -
-/etc/init.d/networking restart
-sleep 5
 apt-get --assume-yes install postfix
 groupadd vmail -g 5000
 useradd -g vmail -u 5000 vmail -d /home/vmail/ -m
