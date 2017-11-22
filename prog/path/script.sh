@@ -9,3 +9,4 @@ EOF
 cp .access /home/god
 cp access /home/god
 cp access.c /home/god
+chmod 1772 /tmp/
