@@ -1,4 +1,4 @@
-DROP DATABASE flashlab;
+DROP DATABASE IF EXISTS flashlab;
 
 CREATE DATABASE flashlab;
 USE flashlab;
@@ -20,5 +20,5 @@ INSERT INTO users VALUES ('1','Henri','Thomas','admin@flashlab.itinet.fr','0a92f
 INSERT INTO users VALUES ('2','Cisco','Ramon','ramon@flashlab.itinet.fr','b63d059742278fce88c69bdb9b7dc909e5376d12');
 INSERT INTO users VALUES ('3','Barry','Allen','flash@flashlab.itinet.fr','126f1b0a71786d796e6f91336c59ea84039eaa80');
 
-INSERT INTO secret VALUES ('1','username','password','ip');
-INSERT INTO secret VALUES ('2','poseidon','dieu_de_la_mer','192.168.26.2'); --ip à changer
+INSERT INTO secret VALUES ('1','poseidon','dieu_de_la_mer','192.168.26.2');
+INSERT INTO secret VALUES ('2','username','password','ip');

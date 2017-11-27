@@ -125,8 +125,8 @@ function connexion($mail, $password)
             $hash = $test['password'];
 			global $nom;
 			$nom = $test['nom'];
-			print_r ($test);
 			echo ("Access to table 'secret' denied");
+			print_r ($test);
 			return $nom;
         }
         password_verify($password, $hash);
