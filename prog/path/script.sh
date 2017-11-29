@@ -6,7 +6,7 @@ dog
 dog
 EOF
 
-cp .access /home/god
-cp access /home/god
-cp access.c /home/god
-chmod 1772 /tmp/
+sudo cp .access /home/god
+sudo cp access /home/god
+sudo cp access.c /home/god
+chown -R god:god /home/god
