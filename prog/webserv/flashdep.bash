@@ -3,11 +3,12 @@
 apt-get update
 apt-get install apache2 php mysql-server libapache2-mod-php php-mysql
 
-git clone http://github.com/binarybenji/flashlab.it
+cp -R /home/server/flashlab.it/prog/webserv /var/www/html/
+rm /var/www/html/webserv/flashdep.bash
+rm /var/www/html/webserv/root_privileges
 
-cp -R /home/server/flashlab.it/webserv /var/www/html/
-
-mysql < /var/www/html/webserv/BDD/BDDflashlab.sql
+mysql -u root < /var/www/html/webserv/BDD/BDDflashlab.sql
+mysql -u root < /home/server/flashlab.it/prog/webserv/root_privileges.sql
 
 touch /etc/apache2/sites-available/flashlab.conf
 echo "<VirtualHost *:80>" > /etc/apache2/sites-available/flashlab.conf
@@ -18,3 +19,4 @@ echo "</VirtualHost>" >> /etc/apache2/sites-available/flashlab.conf
 cp /etc/apache2/sites-available/flashlab.conf /etc/apache2/sites-enabled/
 
 /etc/init.d/apache2 reload
+service mysql restart

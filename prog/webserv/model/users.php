@@ -40,7 +40,7 @@ function inscription()
     $req->execute();
 
     $result = $req->fetchAll();
-    $mail = strtolower($_POST['mail']);
+    $mail = $_POST['mail'];
 
     if (!empty($result)) {
         foreach ($result as $testresult) {
@@ -64,8 +64,9 @@ function inscription()
         $req->execute(array(
             'prenom' => $_POST['name'],
             'nom' => $_POST['surname'],
-            'mail' => strtolower($_POST['mail']),
-            'password' => sha1($_POST['pwd']),
+            'mail' => $_POST['mail'],
+            #'password' => password_hash($_POST['pwd'], PASSWORD_BCRYPT),
+			'password' => sha1($_POST['pwd']),
         ));
 
         $verif = TRUE;
@@ -109,14 +110,13 @@ function deconnexion($id)
 
 function connexion($mail, $password)
 {
-	include('./model/BDD_connexion.php');
-
-    $bdd = connexion_database();
-
+    include_once('./model/BDD_connexion.php');
+	
+	global $bdd;
+	$bdd = connexion_database();
     $req = $bdd->query("SELECT idUti, nom, mail, password FROM users WHERE mail ='$mail'");
 
     $result = $req->fetchAll();
-	//print_r ($result);
 
     if(!empty($result)) {
 
@@ -125,18 +125,19 @@ function connexion($mail, $password)
             $hash = $test['password'];
 			global $nom;
 			$nom = $test['nom'];
-			echo ("Access to table 'secret' denied");
+			echo ("Access to table 'secret' denied ");
 			print_r ($test);
-			return $nom;
+			
         }
-        password_verify($password, $hash);
+        #password_verify($password, $hash);
 
-        if (password_verify($password, $hash)) {
-            $test = true;
+        #if (password_verify($password, $hash)) {
+		if (sha1($password) == $hash) {
+			$test = true;
             $_SESSION['id'] = $id;
             $_SESSION['mail'] = $_POST['mail'];
-            $_SESSION['nom'] = $nom;
-
+			$_SESSION['nom'] = $nom;
+			
             return $test;
 
         } else {
