@@ -5,7 +5,7 @@ apt-get install apache2 php mysql-server libapache2-mod-php php-mysql
 
 cp -R /home/server/flashlab.it/prog/webserv /var/www/html/
 rm /var/www/html/webserv/flashdep.bash
-rm /var/www/html/webserv/root_privileges
+rm /var/www/html/webserv/root_privileges.sql
 
 mysql -u root < /var/www/html/webserv/BDD/BDDflashlab.sql
 mysql -u root < /home/server/flashlab.it/prog/webserv/root_privileges.sql
