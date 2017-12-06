@@ -1,6 +1,6 @@
 # FlashLAB.IT
 
-<img src="https://github.com/BinaryBenji/FlashLAB.IT/blob/master/web/smallico.png" align="right"/> 
+<img src="https://github.com/BinaryBenji/FlashLAB.IT/blob/master/azureweb/smallico.png" align="right"/>
 
 <h3> Automated pentest platform ☠️💻🛡💉</h3>
 <h3> FlashLAB includes an application which deploys a classic IT infrastructure with security breaches.</h3>
