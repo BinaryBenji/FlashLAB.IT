@@ -2,6 +2,13 @@ var express = require('express');
 var router = express.Router();
 var PythonShell = require('python-shell');
 
+/*var options = {
+    pythonPath: '/usr/bin/python3.5',
+    scriptPath: '../../ansible/ok-playbooks/'
+};*/
+
+
+
 /* GET home page. */
 router.get('/', function(req, res, next) {
   res.render('index', { title: 'Express' });
@@ -17,11 +24,7 @@ router.post('/', function(req, res, next) {
   	console.log('Infrastructure deployment requested.')
   	/* WARNING : Set path to the script */ 
 
- //  	var options = {
-	//   scriptPath: '../',
-	// };
-
-  	PythonShell.run('launch.py', function (err, results) {
+      PythonShell.run('launch.py', function (err, results) {
   		if (err) throw err;
 		console.log('%j', results);
 	});
