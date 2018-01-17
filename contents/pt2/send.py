@@ -1,8 +1,8 @@
 from scapy.all import *
 import time
 
-data = 'HELLOOOO'
-a = IP(dst='127.0.0.1') / TCP() / Raw(load=data)
+data = 'Identifiants escobar : cartel'
+a = IP(dst='192.168.1.2') / TCP() / Raw(load=data)
 
 while True:
     sendp(a)

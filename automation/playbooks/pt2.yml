@@ -1,0 +1,40 @@
+---
+
+- hosts: all
+  connection: local
+  user: remote
+  gather_facts: false
+  become_user: true
+
+  tasks:
+    - vsphere_guest:
+        vcenter_hostname: 'XXXXXX'
+        username: 'XXXXXX'
+        password: 'XXXXXX'
+        validate_certs: false
+        guest: 'IV-STWP-FLA_PT2'
+        from_template: yes
+        template_src: "IV-STWV-FLA_PT2"
+        cluster: "CLUSTER"
+        resource_pool: "XXXXXX"
+        vm_extra_config:
+          notes: "PT2 for FlashLAB"
+          power_on_after_clone: yes
+        vm_disk:
+          disk1:
+            size_gb: '5'
+            type: 'thin'
+            datastore: 'XXXXXX'
+        vm_nic:
+          nic1:
+            type: vmxnet3
+            network_type: standard
+        vm_hardware:
+          memory_mb: 4096
+          num_cpus: '2'
+          osid: 'IV-STWP-FLA_PT2'
+          scsi: paravirtual
+        esxi:
+          datacenter: "XXXXXX"
+          hostname: "XXXXXX"
+...

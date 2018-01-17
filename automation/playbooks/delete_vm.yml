@@ -1,0 +1,20 @@
+---
+
+- name: Delete a vsphere ESXI VM
+
+  hosts: all
+  connection: local
+
+  tasks:
+    - name: Delete an ESXi VM Guest
+      vsphere_guest:
+        vcenter_hostname: XXXXXX
+        validate_certs: no
+        username: 'XXXXXX'
+        password: 'XXXXXX'
+        guest: '{{ target }}'
+        state: absent
+        force: yes
+
+...
+
